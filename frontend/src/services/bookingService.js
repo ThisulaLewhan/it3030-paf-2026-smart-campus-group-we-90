@@ -1,3 +1,14 @@
-import api from './api';
+import api from "./api";
 
-export const getBookings = () => api.get('/bookings');
+const endpoint = "/bookings";
+
+const bookingService = {
+  endpoint,
+  getAll: () => api.get(endpoint),
+  getById: (id) => api.get(`${endpoint}/${id}`),
+  create: (payload) => api.post(endpoint, payload),
+  update: (id, payload) => api.put(`${endpoint}/${id}`, payload),
+  remove: (id) => api.delete(`${endpoint}/${id}`),
+};
+
+export default bookingService;

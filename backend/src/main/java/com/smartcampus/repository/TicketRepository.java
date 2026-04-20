@@ -1,8 +1,9 @@
 package com.smartcampus.repository;
 
-import org.springframework.stereotype.Repository;
-import org.springframework.data.mongodb.repository.MongoRepository;
 import com.smartcampus.entity.Ticket;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.stereotype.Repository;
 
 @Repository
-public interface TicketRepository extends MongoRepository<Ticket, String> {}
+public interface TicketRepository extends MongoRepository<Ticket, String> {
+}

@@ -40,44 +40,17 @@ public class NotificationController {
         return ResponseEntity.ok(dtos);
     }
 
-    /**
-     * Flips a specific notification flag to true.
-     */
     @PutMapping("/{id}/read")
-    public ResponseEntity<?> markAsRead(@PathVariable Long id) {
-        try {
-            Notification notification = notificationService.markAsRead(id);
-            return ResponseEntity.ok(convertToDto(notification));
-            
-        } catch (IllegalArgumentException ex) {
-            // Fired if the DB lookup by ID yields null
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-        } catch (SecurityException ex) {
-            // Fired if they attempt to edit an ID they do not truly own
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
-        } catch (Exception ex) {
-            // General hard-fault interceptor 
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    public ResponseEntity<NotificationDto> markAsRead(@PathVariable Long id) {
+        // Invalid IDs or Ownership conflicts are trapped by GlobalExceptionHandler seamlessly
+        Notification notification = notificationService.markAsRead(id);
+        return ResponseEntity.ok(convertToDto(notification));
     }
 
-    /**
-     * Completely eradicates a notification from the DB.
-     */
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteNotification(@PathVariable Long id) {
-        try {
-            notificationService.deleteNotification(id);
-            // Returns a crystal clean 204 No Content for standard REST adherence
-            return ResponseEntity.noContent().build();
-            
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-        } catch (SecurityException ex) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
-        } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    public ResponseEntity<Void> deleteNotification(@PathVariable Long id) {
+        notificationService.deleteNotification(id);
+        return ResponseEntity.noContent().build();
     }
 
     /**

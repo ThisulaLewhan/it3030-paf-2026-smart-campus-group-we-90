@@ -22,35 +22,22 @@ public class UserController {
         this.userService = userService;
     }
 
-    /**
-     * Endpoint reserved explicitly for administrators to update other user's roles.
-     */
     @PutMapping("/{id}/role")
-    @PreAuthorize("hasRole('ADMIN')") // This leverages the @EnableMethodSecurity we set up!
-    public ResponseEntity<?> updateRole(
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserDto> updateRole(
             @PathVariable Long id, 
             @RequestBody UpdateRoleRequestDto request
     ) {
-        try {
-            User updatedUser = userService.updateUserRole(id, request.getRole());
-            
-            // Map the fresh database entity directly to a public DTO
-            // We do this to meticulously ensure we never leak their password hashes back to the frontend.
-            UserDto userDto = new UserDto(
-                    updatedUser.getId(), 
-                    updatedUser.getName(), 
-                    updatedUser.getEmail(), 
-                    updatedUser.getRole()
-            );
-            
-            return ResponseEntity.ok(userDto);
-            
-        } catch (IllegalArgumentException ex) {
-            // Caught if the userId does not exist in the database
-            return ResponseEntity.notFound().build();
-        } catch (Exception ex) {
-            // Blanket capture for internal faults safely avoiding HTML error traces
-            return ResponseEntity.internalServerError().build();
-        }
+        // Execeptions are securely intercepted by GlobalExceptionHandler universally natively via proxy!
+        User updatedUser = userService.updateUserRole(id, request.getRole());
+        
+        UserDto userDto = new UserDto(
+                updatedUser.getId(), 
+                updatedUser.getName(), 
+                updatedUser.getEmail(), 
+                updatedUser.getRole()
+        );
+        
+        return ResponseEntity.ok(userDto);
     }
 }

@@ -44,7 +44,7 @@ public class NotificationService {
         User currentUser = authService.getCurrentlyAuthenticatedUser();
         
         Notification notification = notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new IllegalArgumentException("Notification not found"));
+                .orElseThrow(() -> new com.smartcampus.exception.ResourceNotFoundException("Notification not found with ID: " + notificationId));
 
         validateOwnership(currentUser, notification);
 
@@ -60,7 +60,7 @@ public class NotificationService {
         User currentUser = authService.getCurrentlyAuthenticatedUser();
         
         Notification notification = notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new IllegalArgumentException("Notification not found"));
+                .orElseThrow(() -> new com.smartcampus.exception.ResourceNotFoundException("Notification not found with ID: " + notificationId));
 
         validateOwnership(currentUser, notification);
 
@@ -103,7 +103,7 @@ public class NotificationService {
     private void validateOwnership(User currentUser, Notification notification) {
         // Compare IDs mathematically to avoid deep-object memory mismatch issues
         if (!notification.getUser().getId().equals(currentUser.getId())) {
-            throw new SecurityException("Forbidden: You do not own this notification.");
+            throw new com.smartcampus.exception.ForbiddenException("Forbidden: You do not own this notification.");
         }
     }
 }

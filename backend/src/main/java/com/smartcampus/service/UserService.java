@@ -14,12 +14,9 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    /**
-     * Look up a user by ID and permanently update their RBAC Role.
-     */
     public User updateUserRole(Long userId, Role newRole) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+                .orElseThrow(() -> new com.smartcampus.exception.ResourceNotFoundException("User not found with ID: " + userId));
         
         user.setRole(newRole);
         return userRepository.save(user);

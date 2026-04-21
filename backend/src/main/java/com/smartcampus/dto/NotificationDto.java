@@ -1,39 +1,64 @@
 package com.smartcampus.dto;
 
+import com.smartcampus.entity.NotificationType;
 import java.time.LocalDateTime;
 
-// DTO for sending/receiving Notification data
 public class NotificationDto {
 
-    private String id;
-    private String title;
+    private Long id;
     private String message;
-    private String audience;
-    private String channel;
-    private boolean read;
+    private NotificationType type;
+    private boolean isRead;
     private LocalDateTime createdAt;
 
     public NotificationDto() {
     }
 
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
+    public NotificationDto(Long id, String message, NotificationType type, boolean isRead, LocalDateTime createdAt) {
+        this.id = id;
+        this.message = message;
+        this.type = type;
+        this.isRead = isRead;
+        this.createdAt = createdAt;
+    }
 
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getMessage() { return message; }
-    public void setMessage(String message) { this.message = message; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public String getAudience() { return audience; }
-    public void setAudience(String audience) { this.audience = audience; }
+    public String getMessage() {
+        return message;
+    }
 
-    public String getChannel() { return channel; }
-    public void setChannel(String channel) { this.channel = channel; }
+    public void setMessage(String message) {
+        this.message = message;
+    }
 
-    public boolean isRead() { return read; }
-    public void setRead(boolean read) { this.read = read; }
+    public NotificationType getType() {
+        return type;
+    }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public void setType(NotificationType type) {
+        this.type = type;
+    }
+
+    public boolean isRead() {
+        return isRead;
+    }
+
+    public void setRead(boolean isRead) {
+        this.isRead = isRead;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
 }

@@ -1,6 +1,5 @@
 package com.smartcampus.dto;
 
-// DTO for returning login/registration success responses with JWT
 public class AuthResponseDto {
 
     private String token;
@@ -14,9 +13,19 @@ public class AuthResponseDto {
         this.user = user;
     }
 
-    public String getToken() { return token; }
-    public void setToken(String token) { this.token = token; }
+    public String getToken() {
+        return token;
+    }
 
-    public UserDto getUser() { return user; }
-    public void setUser(UserDto user) { this.user = user; }
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public UserDto getUser() {
+        return user;
+    }
+
+    public void setUser(UserDto user) {
+        this.user = user;
+    }
 }

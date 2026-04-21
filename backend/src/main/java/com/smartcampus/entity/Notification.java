@@ -1,36 +1,75 @@
 package com.smartcampus.entity;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
 import java.time.LocalDateTime;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection = "notifications")
+@Entity
+@Table(name = "notifications")
 public class Notification {
 
     @Id
-    private String id;
-    private String title;
-    private String message;
-    private String audience;
-    private String channel;
-    private boolean read;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    public String getId() {
+    // Many notifications belong to one user
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @Column(nullable = false)
+    private String message;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private NotificationType type;
+
+    @Column(name = "is_read", nullable = false)
+    private boolean isRead = false;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    // Automatically set the creation timestamp right before it is persisted to the DB
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
+
+    public Notification() {
+    }
+
+    public Notification(User user, String message, NotificationType type) {
+        this.user = user;
+        this.message = message;
+        this.type = type;
+        this.isRead = false;
+    }
+
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public String getTitle() {
-        return title;
+    public User getUser() {
+        return user;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public String getMessage() {
@@ -41,28 +80,20 @@ public class Notification {
         this.message = message;
     }
 
-    public String getAudience() {
-        return audience;
+    public NotificationType getType() {
+        return type;
     }
 
-    public void setAudience(String audience) {
-        this.audience = audience;
-    }
-
-    public String getChannel() {
-        return channel;
-    }
-
-    public void setChannel(String channel) {
-        this.channel = channel;
+    public void setType(NotificationType type) {
+        this.type = type;
     }
 
     public boolean isRead() {
-        return read;
+        return isRead;
     }
 
     public void setRead(boolean read) {
-        this.read = read;
+        this.isRead = read;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -71,13 +102,5 @@ public class Notification {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
     }
 }

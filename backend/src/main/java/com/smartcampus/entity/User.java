@@ -1,46 +1,94 @@
 package com.smartcampus.entity;
 
-import java.time.LocalDateTime;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
-// Represents a registered user stored in MongoDB
-@Document(collection = "users")
+@Entity
+@Table(name = "users")
 public class User {
 
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    // Unique email used as the login username
+    @Column(nullable = false)
+    private String name;
+
+    @Column(nullable = false, unique = true)
     private String email;
 
-    // BCrypt-hashed password – never stored in plain text
+    @Column(nullable = false)
     private String password;
 
-    // Role-based access: e.g. STUDENT, STAFF, ADMIN
-    private String role;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
 
-    private String fullName;
+    @Column(name = "auth_provider")
+    private String authProvider;
 
-    private LocalDateTime createdAt;
+    public User() {
+    }
 
-    // ── Getters & Setters ────────────────────────────────────────────────────
+    public User(String name, String email, String password, Role role, String authProvider) {
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.role = role;
+        this.authProvider = authProvider;
+    }
 
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
+    public String getName() {
+        return name;
+    }
 
-    public String getRole() { return role; }
-    public void setRole(String role) { this.role = role; }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    public String getFullName() { return fullName; }
-    public void setFullName(String fullName) { this.fullName = fullName; }
+    public String getEmail() {
+        return email;
+    }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+    public String getAuthProvider() {
+        return authProvider;
+    }
+
+    public void setAuthProvider(String authProvider) {
+        this.authProvider = authProvider;
+    }
 }

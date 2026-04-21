@@ -34,6 +34,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Allow public access to all authentication endpoints (login, register)
                 .requestMatchers("/api/auth/**").permitAll()
+                // Explicitly secure notification endpoints
+                .requestMatchers("/api/notifications/**").authenticated()
                 // Require authentication for all other routes in the system
                 .anyRequest().authenticated()
             )

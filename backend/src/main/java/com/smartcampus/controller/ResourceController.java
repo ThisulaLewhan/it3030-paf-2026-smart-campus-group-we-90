@@ -2,52 +2,50 @@ package com.smartcampus.controller;
 
 import com.smartcampus.entity.Resource;
 import com.smartcampus.service.ResourceService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/resources")
+@CrossOrigin(origins = "*") // Update in production
 public class ResourceController {
 
-    private final ResourceService resourceService;
-
-    public ResourceController(ResourceService resourceService) {
-        this.resourceService = resourceService;
-    }
+    @Autowired
+    private ResourceService resourceService;
 
     @GetMapping
-    public List<Resource> getResources() {
+    public List<Resource> getAllResources() {
         return resourceService.getAllResources();
     }
 
     @GetMapping("/{id}")
-    public Resource getResource(@PathVariable String id) {
-        return resourceService.getResourceById(id);
+    public ResponseEntity<Resource> getResourceById(@PathVariable Long id) {
+        return resourceService.getResourceById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
     public Resource createResource(@RequestBody Resource resource) {
         return resourceService.createResource(resource);
     }
 
     @PutMapping("/{id}")
-    public Resource updateResource(@PathVariable String id, @RequestBody Resource resource) {
-        return resourceService.updateResource(id, resource);
+    public ResponseEntity<Resource> updateResource(@PathVariable Long id, @RequestBody Resource resourceDetails) {
+        try {
+            Resource updatedResource = resourceService.updateResource(id, resourceDetails);
+            return ResponseEntity.ok(updatedResource);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteResource(@PathVariable String id) {
+    public ResponseEntity<Void> deleteResource(@PathVariable Long id) {
         resourceService.deleteResource(id);
+        return ResponseEntity.noContent().build();
     }
 }

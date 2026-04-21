@@ -1,27 +1,48 @@
 package com.smartcampus.entity;
 
-import java.time.LocalDateTime;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import jakarta.persistence.*;
 
-@Document(collection = "resources")
+@Entity
+@Table(name = "resources")
 public class Resource {
 
     @Id
-    private String id;
-    private String name;
-    private String type;
-    private String location;
-    private Integer capacity;
-    private String status;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    public String getId() {
+    @Column(nullable = false)
+    private String name;
+
+    @Column(nullable = false)
+    private String type; // e.g., lecture hall, lab, meeting room, equipment
+
+    private Integer capacity;
+
+    private String location;
+
+    private String availabilityWindows; // e.g., "08:00-18:00"
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ResourceStatus status = ResourceStatus.ACTIVE;
+
+    public Resource() {
+    }
+
+    public Resource(String name, String type, Integer capacity, String location, String availabilityWindows, ResourceStatus status) {
+        this.name = name;
+        this.type = type;
+        this.capacity = capacity;
+        this.location = location;
+        this.availabilityWindows = availabilityWindows;
+        this.status = status;
+    }
+
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -41,14 +62,6 @@ public class Resource {
         this.type = type;
     }
 
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
-    }
-
     public Integer getCapacity() {
         return capacity;
     }
@@ -57,27 +70,27 @@ public class Resource {
         this.capacity = capacity;
     }
 
-    public String getStatus() {
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public String getAvailabilityWindows() {
+        return availabilityWindows;
+    }
+
+    public void setAvailabilityWindows(String availabilityWindows) {
+        this.availabilityWindows = availabilityWindows;
+    }
+
+    public ResourceStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(ResourceStatus status) {
         this.status = status;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
     }
 }

@@ -2,47 +2,43 @@ package com.smartcampus.service;
 
 import com.smartcampus.entity.Resource;
 import com.smartcampus.repository.ResourceRepository;
-import java.time.LocalDateTime;
-import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ResourceService {
 
-    private final ResourceRepository resourceRepository;
-
-    public ResourceService(ResourceRepository resourceRepository) {
-        this.resourceRepository = resourceRepository;
-    }
+    @Autowired
+    private ResourceRepository resourceRepository;
 
     public List<Resource> getAllResources() {
         return resourceRepository.findAll();
     }
 
-    public Resource getResourceById(String id) {
-        return resourceRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Resource not found: " + id));
+    public Optional<Resource> getResourceById(Long id) {
+        return resourceRepository.findById(id);
     }
 
     public Resource createResource(Resource resource) {
-        LocalDateTime now = LocalDateTime.now();
-        resource.setCreatedAt(now);
-        resource.setUpdatedAt(now);
         return resourceRepository.save(resource);
     }
 
-    public Resource updateResource(String id, Resource updatedResource) {
-        Resource existingResource = getResourceById(id);
-        existingResource.setName(updatedResource.getName());
-        existingResource.setType(updatedResource.getType());
-        existingResource.setLocation(updatedResource.getLocation());
-        existingResource.setCapacity(updatedResource.getCapacity());
-        existingResource.setStatus(updatedResource.getStatus());
-        existingResource.setUpdatedAt(LocalDateTime.now());
-        return resourceRepository.save(existingResource);
+    public Resource updateResource(Long id, Resource resourceDetails) {
+        return resourceRepository.findById(id).map(resource -> {
+            resource.setName(resourceDetails.getName());
+            resource.setType(resourceDetails.getType());
+            resource.setCapacity(resourceDetails.getCapacity());
+            resource.setLocation(resourceDetails.getLocation());
+            resource.setAvailabilityWindows(resourceDetails.getAvailabilityWindows());
+            resource.setStatus(resourceDetails.getStatus());
+            return resourceRepository.save(resource);
+        }).orElseThrow(() -> new RuntimeException("Resource not found with id " + id));
     }
 
-    public void deleteResource(String id) {
+    public void deleteResource(Long id) {
         resourceRepository.deleteById(id);
     }
 }

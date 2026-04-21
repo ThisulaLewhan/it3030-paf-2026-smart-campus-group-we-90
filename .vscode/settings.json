@@ -1,0 +1,27 @@
+{
+  // Java project root for VS Code Java extension
+  "java.project.sourcePaths": ["backend/src/main/java"],
+  "java.project.referencedLibraries": ["backend/**/*.jar"],
+
+  // Use the backend folder as the Maven project root
+  "java.import.maven.enabled": true,
+  "java.configuration.updateBuildConfiguration": "automatic",
+
+  // Format on save
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+  // Terminal default: PowerShell
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+
+  // Hide .maven folder from Explorer sidebar (it's a local cache)
+  "files.exclude": {
+    "backend/.maven": true,
+    "**/node_modules": true,
+    "**/.git": true,
+    "**/target": true
+  },
+
+  // Spring Boot Dashboard auto-refresh
+  "spring-boot.ls.problem.application-properties.PROP_UNKNOWN_PROPERTY": "WARNING"
+}

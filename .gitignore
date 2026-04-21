@@ -1,3 +1,14 @@
 node_modules/
 frontend/build/
 backend/target/
+
+# Local Maven download cache (auto-created by run-backend.ps1)
+backend/.maven/
+
+# Environment variables
+.env
+.env.local
+
+# IDE folders
+.idea/
+*.iml

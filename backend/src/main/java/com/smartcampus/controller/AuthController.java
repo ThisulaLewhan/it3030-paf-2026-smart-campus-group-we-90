@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -26,15 +28,11 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequestDto request) {
-        try {
-            AuthResponseDto response = authService.login(request);
-            return ResponseEntity.ok(response);
-        } catch (Exception ex) {
-            // Catch BadCredentialsException (and any internal IllegalArgumentException) cleanly
-            // to ensure client receives standard JSON/text instead of an HTML error stack trace.
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
-        }
+    public ResponseEntity<AuthResponseDto> login(@Valid @RequestBody LoginRequestDto request) {
+        // Validation seamlessly kicks out bad payloads before entering the logic loop
+        // BadCredentials via Service are kicked elegantly by the generic exception interceptor natively!
+        AuthResponseDto response = authService.login(request);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/me")

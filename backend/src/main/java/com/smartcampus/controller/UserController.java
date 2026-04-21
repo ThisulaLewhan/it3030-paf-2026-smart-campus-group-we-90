@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -26,7 +28,7 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserDto> updateRole(
             @PathVariable Long id, 
-            @RequestBody UpdateRoleRequestDto request
+            @Valid @RequestBody UpdateRoleRequestDto request
     ) {
         // Execeptions are securely intercepted by GlobalExceptionHandler universally natively via proxy!
         User updatedUser = userService.updateUserRole(id, request.getRole());

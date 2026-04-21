@@ -1,8 +1,15 @@
 package com.smartcampus.dto;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+
 public class LoginRequestDto {
 
+    @NotBlank(message = "Email is strictly required")
+    @Email(message = "Provided email string must be structurally valid")
     private String email;
+
+    @NotBlank(message = "Password cannot be arbitrarily blank")
     private String password;
 
     public LoginRequestDto() {

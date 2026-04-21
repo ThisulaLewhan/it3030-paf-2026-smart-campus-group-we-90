@@ -41,6 +41,18 @@ public class GlobalExceptionHandler {
         return buildError(HttpStatus.FORBIDDEN, "Forbidden", "You do not have the designated roles required to access this subsystem.");
     }
 
+    // Triggers when @Valid constraints natively fail inside RequestBody payloads
+    @ExceptionHandler(org.springframework.web.bind.MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponseDto> handleValidationExceptions(org.springframework.web.bind.MethodArgumentNotValidException ex) {
+        // Collects all individual field errors into one comma-separated clean string
+        String validationErrors = ex.getBindingResult().getFieldErrors().stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .reduce((msg1, msg2) -> msg1 + ", " + msg2)
+                .orElse("Validation failed with unspecified malformed constraints");
+                
+        return buildError(HttpStatus.BAD_REQUEST, "Validation Failure", validationErrors);
+    }
+
     // Final safety net intercepting unhandled crashes protecting server architecture
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDto> handleGeneric(Exception ex) {

@@ -33,6 +33,7 @@ public class IncidentTicket {
     private String createdBy;
     private String assignedTechnician;
     private String rejectionReason;
+    private String resolutionNotes;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -130,6 +131,14 @@ public class IncidentTicket {
 
     public void setRejectionReason(String rejectionReason) {
         this.rejectionReason = rejectionReason;
+    }
+
+    public String getResolutionNotes() {
+        return resolutionNotes;
+    }
+
+    public void setResolutionNotes(String resolutionNotes) {
+        this.resolutionNotes = resolutionNotes;
     }
 
     public LocalDateTime getCreatedAt() {

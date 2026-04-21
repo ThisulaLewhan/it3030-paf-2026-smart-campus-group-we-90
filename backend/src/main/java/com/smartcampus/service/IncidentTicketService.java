@@ -1,18 +1,34 @@
 package com.smartcampus.service;
 
 import com.smartcampus.dto.IncidentTicketDTO;
+import com.smartcampus.dto.RejectDTO;
+import com.smartcampus.dto.StatusUpdateDTO;
 import com.smartcampus.entity.IncidentTicket;
 import com.smartcampus.entity.IncidentTicket.Status;
 import com.smartcampus.repository.IncidentTicketRepository;
 
 import java.time.LocalDateTime;
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
 @Service
 public class IncidentTicketService {
+
+    private static final Map<Status, Set<Status>> ALLOWED_TRANSITIONS = new EnumMap<>(Status.class);
+
+    static {
+        ALLOWED_TRANSITIONS.put(Status.OPEN,        EnumSet.of(Status.IN_PROGRESS));
+        ALLOWED_TRANSITIONS.put(Status.IN_PROGRESS, EnumSet.of(Status.RESOLVED));
+        ALLOWED_TRANSITIONS.put(Status.RESOLVED,    EnumSet.of(Status.CLOSED));
+        ALLOWED_TRANSITIONS.put(Status.CLOSED,      EnumSet.noneOf(Status.class));
+        ALLOWED_TRANSITIONS.put(Status.REJECTED,    EnumSet.noneOf(Status.class));
+    }
 
     private final IncidentTicketRepository incidentTicketRepository;
 
@@ -50,5 +66,38 @@ public class IncidentTicketService {
 
     public List<IncidentTicket> getTicketsByUser(String username) {
         return incidentTicketRepository.findByCreatedBy(username);
+    }
+
+    public IncidentTicket updateStatus(String id, StatusUpdateDTO dto) {
+        IncidentTicket ticket = getTicketById(id);
+        Status current = ticket.getStatus();
+        Status next = dto.getStatus();
+
+        Set<Status> allowed = ALLOWED_TRANSITIONS.getOrDefault(current, EnumSet.noneOf(Status.class));
+        if (!allowed.contains(next)) {
+            throw new IllegalStateException(
+                "Invalid status transition: " + current + " → " + next);
+        }
+
+        ticket.setStatus(next);
+        if (dto.getResolutionNotes() != null) {
+            ticket.setResolutionNotes(dto.getResolutionNotes());
+        }
+        ticket.setUpdatedAt(LocalDateTime.now());
+        return incidentTicketRepository.save(ticket);
+    }
+
+    public IncidentTicket rejectTicket(String id, RejectDTO dto) {
+        IncidentTicket ticket = getTicketById(id);
+
+        if (ticket.getStatus() != Status.OPEN) {
+            throw new IllegalStateException(
+                "Only OPEN tickets can be rejected. Current status: " + ticket.getStatus());
+        }
+
+        ticket.setStatus(Status.REJECTED);
+        ticket.setRejectionReason(dto.getReason());
+        ticket.setUpdatedAt(LocalDateTime.now());
+        return incidentTicketRepository.save(ticket);
     }
 }

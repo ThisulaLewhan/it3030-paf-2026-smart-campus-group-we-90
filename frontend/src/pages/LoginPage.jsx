@@ -95,7 +95,11 @@ const LoginPage = () => {
             className="login-button" 
             disabled={loading}
           >
-            {loading ? 'Authenticating...' : 'Sign In'}
+            {loading ? (
+              <span className="button-spinner-wrap">
+                <span className="button-spinner"></span> Authenticating...
+              </span>
+            ) : 'Sign In'}
           </button>
         </form>
       </div>

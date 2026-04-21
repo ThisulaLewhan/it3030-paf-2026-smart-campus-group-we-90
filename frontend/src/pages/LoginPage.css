@@ -84,6 +84,29 @@
 .login-button:disabled {
   background-color: #93c5fd;
   cursor: not-allowed;
+  opacity: 0.85;
+}
+
+/* Spinner Utilities for Loading Interactions */
+.button-spinner-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.button-spinner {
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  animation: authSpin 1s linear infinite;
+}
+
+@keyframes authSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .login-error {

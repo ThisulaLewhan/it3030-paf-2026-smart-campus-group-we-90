@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -16,6 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity // Specifically enables method-level security like @PreAuthorize("hasRole('ADMIN')")
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
@@ -34,8 +36,13 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Allow public access to all authentication endpoints (login, register)
                 .requestMatchers("/api/auth/**").permitAll()
-                // Explicitly secure notification endpoints
+                
+                // Globally secure any route starting with /api/admin/** to strictly require the ADMIN role
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                
+                // Explicitly secure notification endpoints (accessible by anyone authenticated)
                 .requestMatchers("/api/notifications/**").authenticated()
+                
                 // Require authentication for all other routes in the system
                 .anyRequest().authenticated()
             )

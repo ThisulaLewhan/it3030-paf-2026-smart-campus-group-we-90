@@ -68,6 +68,36 @@ public class NotificationService {
     }
 
     /**
+     * Helper for Booking Module: Notifies a user when their resource booking status changes.
+     */
+    public void notifyBookingStatusChange(User targetUser, String resourceName, String newStatus) {
+        String message = String.format("Your booking for '%s' is now %s.", resourceName, newStatus.toUpperCase());
+        
+        // Dynamically shift visual weight based on if it was rejected or approved
+        NotificationType type = newStatus.equalsIgnoreCase("REJECTED") ? NotificationType.WARNING : NotificationType.INFO;
+        createNotification(targetUser, message, type);
+    }
+
+    /**
+     * Helper for Ticket Module: Alerts a user heavily when a support or IT ticket shifts states.
+     */
+    public void notifyTicketStatusUpdate(User targetUser, String ticketId, String status) {
+        String message = String.format("Update on Ticket #%s: Status is now %s.", ticketId, status);
+        
+        // System alerts act as primary interceptors
+        createNotification(targetUser, message, NotificationType.ALERT);
+    }
+
+    /**
+     * Helper for Social/Forum Module: Dispatches an info ping when someone leaves a comment.
+     */
+    public void notifyNewComment(User targetUser, String commenterName, String threadTitle) {
+        String message = String.format("%s replied to '%s'.", commenterName, threadTitle);
+        
+        createNotification(targetUser, message, NotificationType.INFO);
+    }
+
+    /**
      * Dedicated private helper to enforce rigid ownership constraints.
      */
     private void validateOwnership(User currentUser, Notification notification) {

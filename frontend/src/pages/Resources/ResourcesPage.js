@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import resourceService from '../../services/resourceService';
 import ResourceList from './components/ResourceList';
 import ResourceForm from './components/ResourceForm';
+import ResourceFilter from './components/ResourceFilter';
 
 function ResourcesPage() {
   const [resources, setResources] = useState([]);
@@ -14,10 +15,23 @@ function ResourcesPage() {
     fetchResources();
   }, []);
 
-  const fetchResources = async () => {
+  const fetchResources = async (searchParams = null) => {
     try {
       setLoading(true);
-      const response = await resourceService.getAll();
+      let response;
+      
+      if (searchParams && (searchParams.type || searchParams.capacity || searchParams.location)) {
+        // filter out empty params
+        const params = {};
+        if (searchParams.type) params.type = searchParams.type;
+        if (searchParams.capacity) params.capacity = searchParams.capacity;
+        if (searchParams.location) params.location = searchParams.location;
+        
+        response = await resourceService.search(params);
+      } else {
+        response = await resourceService.getAll();
+      }
+      
       setResources(response.data);
       setError(null);
     } catch (err) {
@@ -59,6 +73,14 @@ function ResourcesPage() {
     }
   };
 
+  const handleSearch = (filters) => {
+    fetchResources(filters);
+  };
+
+  const handleClearFilters = () => {
+    fetchResources();
+  };
+
   return (
     <section style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
@@ -90,6 +112,10 @@ function ResourcesPage() {
           onResourceSaved={handleResourceSaved} 
           onCancel={handleCancelForm} 
         />
+      )}
+
+      {!showAddForm && (
+        <ResourceFilter onSearch={handleSearch} onClear={handleClearFilters} />
       )}
 
       {loading ? (

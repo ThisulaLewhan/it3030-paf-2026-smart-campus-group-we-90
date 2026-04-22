@@ -44,19 +44,19 @@ public class NotificationServiceTest {
     @BeforeEach
     void setUp() {
         owner = new User();
-        owner.setId(1L);
+        owner.setId("user-1");
         owner.setEmail("owner@smartcampus.edu");
         owner.setName("Legitimate Owner");
         owner.setRole(Role.USER);
 
         attacker = new User();
-        attacker.setId(99L);
+        attacker.setId("user-99");
         attacker.setEmail("hacker@smartcampus.edu");
         attacker.setName("Malicious Attacker");
         attacker.setRole(Role.USER);
 
         notification = new Notification(owner, "System update incoming", NotificationType.INFO);
-        notification.setId(500L); // Synthetic ID
+        notification.setId("notif-500"); // Synthetic ID
         notification.setRead(false);
     }
 
@@ -64,11 +64,11 @@ public class NotificationServiceTest {
     void testMarkAsRead_Success_WhenUserIsAbsoluteOwner() {
         // Arrange
         when(authService.getCurrentlyAuthenticatedUser()).thenReturn(owner);
-        when(notificationRepository.findById(500L)).thenReturn(Optional.of(notification));
+        when(notificationRepository.findById("notif-500")).thenReturn(Optional.of(notification));
         when(notificationRepository.save(any(Notification.class))).thenReturn(notification);
 
         // Act
-        Notification updatedNotif = notificationService.markAsRead(500L);
+        Notification updatedNotif = notificationService.markAsRead("notif-500");
 
         // Assert
         assertTrue(updatedNotif.isRead(), "The backend flag should flip to true mathematically");
@@ -81,12 +81,12 @@ public class NotificationServiceTest {
         when(authService.getCurrentlyAuthenticatedUser()).thenReturn(attacker);
         
         // The attacker targets the owner's specific Database ID
-        when(notificationRepository.findById(500L)).thenReturn(Optional.of(notification));
+        when(notificationRepository.findById("notif-500")).thenReturn(Optional.of(notification));
 
         // Act & Assert
         // We evaluate strictly what the NotificationService physically does here
         assertThrows(ForbiddenException.class, () -> {
-            notificationService.markAsRead(500L);
+            notificationService.markAsRead("notif-500");
         }, "Should aggressively throw ForbiddenException intercepting the non-owner");
 
         // Mathematical verification that the database save( ) command was completely starved and never clicked
@@ -97,10 +97,10 @@ public class NotificationServiceTest {
     void testDeleteNotification_CruciallyChecksOwnershipBeforeDroppingData() {
         // Arrange
         when(authService.getCurrentlyAuthenticatedUser()).thenReturn(owner);
-        when(notificationRepository.findById(500L)).thenReturn(Optional.of(notification));
+        when(notificationRepository.findById("notif-500")).thenReturn(Optional.of(notification));
 
         // Act
-        notificationService.deleteNotification(500L);
+        notificationService.deleteNotification("notif-500");
 
         // Assert
         // Validate that because they owned it, the database physically received the deletion call

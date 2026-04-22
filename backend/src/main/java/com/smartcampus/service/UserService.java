@@ -19,7 +19,7 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public User updateUserRole(Long userId, Role newRole) {
+    public User updateUserRole(String userId, Role newRole) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new com.smartcampus.exception.ResourceNotFoundException("User not found with ID: " + userId));
         

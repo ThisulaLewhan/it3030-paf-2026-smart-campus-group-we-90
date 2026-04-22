@@ -15,8 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import java.util.UUID;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
@@ -44,7 +43,6 @@ public class AuthService {
      * Registers a new user with hashed password, assigns the default USER role,
      * then auto-generates a JWT so the user is instantly logged in after sign-up.
      */
-    @Transactional
     public AuthResponseDto register(RegisterRequestDto request) {
         // Check if email is already taken
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -58,6 +56,7 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(Role.USER);
         user.setAuthProvider("local");
+        user.setCreatedAt(LocalDateTime.now());
         userRepository.save(user);
 
         // Build response DTO
@@ -132,7 +131,6 @@ public class AuthService {
      * Handles the business logic after a successful OAuth2 login.
      * Finds the user by email or creates a new one, then issues a JWT.
      */
-    @Transactional
     public String processOAuthPostLogin(String email, String name) {
         User user = userRepository.findByEmail(email).orElseGet(() -> {
             User newUser = new User();
@@ -142,6 +140,7 @@ public class AuthService {
             newUser.setPassword("");
             newUser.setRole(com.smartcampus.entity.Role.USER);
             newUser.setAuthProvider("google");
+            newUser.setCreatedAt(LocalDateTime.now());
             return userRepository.save(newUser);
         });
 
@@ -169,7 +168,6 @@ public class AuthService {
         );
     }
 
-    @Transactional
     public void changePassword(ChangePasswordRequestDto request) {
         User user = getCurrentlyAuthenticatedUser();
 

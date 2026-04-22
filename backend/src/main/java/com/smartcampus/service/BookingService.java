@@ -19,7 +19,7 @@ public class BookingService {
         return bookingRepository.findAll();
     }
 
-    public Booking getBookingById(Long id) {
+    public Booking getBookingById(String id) {
         return bookingRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Booking not found: " + id));
     }
@@ -31,7 +31,7 @@ public class BookingService {
         return bookingRepository.save(booking);
     }
 
-    public Booking updateBooking(Long id, Booking updatedBooking) {
+    public Booking updateBooking(String id, Booking updatedBooking) {
         Booking existingBooking = getBookingById(id);
         existingBooking.setResourceId(updatedBooking.getResourceId());
         existingBooking.setBookedBy(updatedBooking.getBookedBy());
@@ -43,7 +43,7 @@ public class BookingService {
         return bookingRepository.save(existingBooking);
     }
 
-    public void deleteBooking(Long id) {
+    public void deleteBooking(String id) {
         bookingRepository.deleteById(id);
     }
 }

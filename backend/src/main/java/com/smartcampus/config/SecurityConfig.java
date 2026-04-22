@@ -70,9 +70,6 @@ public class SecurityConfig {
                 // Allow OAuth2 login & callback URLs so the OAuth2 flow works without a JWT
                 .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                 
-                // Allow H2 console access during development
-                .requestMatchers("/h2-console/**").permitAll()
-                
                 // Globally secure any route starting with /api/admin/** to strictly require the ADMIN role
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 
@@ -82,9 +79,6 @@ public class SecurityConfig {
                 // Require authentication for all other routes in the system
                 .anyRequest().authenticated()
             )
-            
-            // Allow H2 console to render inside frames
-            .headers(headers -> headers.frameOptions(frame -> frame.disable()))
             
             // Enforce stateless session management (no session ID cookies on the server)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

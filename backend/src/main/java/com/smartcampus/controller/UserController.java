@@ -43,7 +43,7 @@ public class UserController {
     @PutMapping("/{id}/role")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserDto> updateRole(
-            @PathVariable Long id, 
+            @PathVariable String id,
             @Valid @RequestBody UpdateRoleRequestDto request
     ) {
         // Execeptions are securely intercepted by GlobalExceptionHandler universally natively via proxy!

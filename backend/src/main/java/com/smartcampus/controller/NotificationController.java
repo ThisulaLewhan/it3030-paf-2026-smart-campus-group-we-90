@@ -40,7 +40,7 @@ public class NotificationController {
     }
 
     @PutMapping("/{id}/read")
-    public ResponseEntity<NotificationDto> markAsRead(@PathVariable Long id) {
+    public ResponseEntity<NotificationDto> markAsRead(@PathVariable String id) {
         // Invalid IDs or Ownership conflicts are trapped by GlobalExceptionHandler seamlessly
         Notification notification = notificationService.markAsRead(id);
         return ResponseEntity.ok(convertToDto(notification));
@@ -55,7 +55,7 @@ public class NotificationController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteNotification(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteNotification(@PathVariable String id) {
         notificationService.deleteNotification(id);
         return ResponseEntity.noContent().build();
     }

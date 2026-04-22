@@ -59,7 +59,7 @@ public class GlobalExceptionHandler {
         return buildError(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 "Database Error",
-                "Profile data could not be saved because the database schema is out of date. Restart the backend and try again."
+                "The application could not complete the database operation. Check the MongoDB connection and try again."
         );
     }
 

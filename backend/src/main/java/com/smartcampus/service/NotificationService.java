@@ -24,7 +24,6 @@ public class NotificationService {
      */
     public Notification createNotification(User targetUser, String message, NotificationType type) {
         Notification notification = new Notification(targetUser, message, type);
-        // createdAt is automatically handled by @PrePersist in the entity!
         return notificationRepository.save(notification);
     }
 
@@ -41,7 +40,7 @@ public class NotificationService {
      * Sets a specific notification as 'read'.
      * Validates that the notification actually belongs to the person trying to read it.
      */
-    public Notification markAsRead(Long notificationId) {
+    public Notification markAsRead(String notificationId) {
         User currentUser = authService.getCurrentlyAuthenticatedUser();
         
         Notification notification = notificationRepository.findById(notificationId)
@@ -72,7 +71,7 @@ public class NotificationService {
      * Deletes a specific notification entirely.
      * Hard-checks ownership at the service layer to prevent malicious cross-account deletions.
      */
-    public void deleteNotification(Long notificationId) {
+    public void deleteNotification(String notificationId) {
         User currentUser = authService.getCurrentlyAuthenticatedUser();
         
         Notification notification = notificationRepository.findById(notificationId)
@@ -118,7 +117,7 @@ public class NotificationService {
      */
     private void validateOwnership(User currentUser, Notification notification) {
         // Compare IDs mathematically to avoid deep-object memory mismatch issues
-        if (!notification.getUser().getId().equals(currentUser.getId())) {
+        if (!notification.getUserId().equals(currentUser.getId())) {
             throw new com.smartcampus.exception.ForbiddenException("Forbidden: You do not own this notification.");
         }
     }

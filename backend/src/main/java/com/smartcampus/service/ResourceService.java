@@ -19,7 +19,7 @@ public class ResourceService {
         return resourceRepository.findAll();
     }
 
-    public Resource getResourceById(Long id) {
+    public Resource getResourceById(String id) {
         return resourceRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Resource not found: " + id));
     }
@@ -31,7 +31,7 @@ public class ResourceService {
         return resourceRepository.save(resource);
     }
 
-    public Resource updateResource(Long id, Resource updatedResource) {
+    public Resource updateResource(String id, Resource updatedResource) {
         Resource existingResource = getResourceById(id);
         existingResource.setName(updatedResource.getName());
         existingResource.setType(updatedResource.getType());
@@ -42,7 +42,7 @@ public class ResourceService {
         return resourceRepository.save(existingResource);
     }
 
-    public void deleteResource(Long id) {
+    public void deleteResource(String id) {
         resourceRepository.deleteById(id);
     }
 }

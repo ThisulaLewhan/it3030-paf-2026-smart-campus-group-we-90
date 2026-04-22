@@ -30,7 +30,7 @@ public class ResourceController {
     }
 
     @GetMapping("/{id}")
-    public Resource getResource(@PathVariable Long id) {
+    public Resource getResource(@PathVariable String id) {
         return resourceService.getResourceById(id);
     }
 
@@ -41,13 +41,13 @@ public class ResourceController {
     }
 
     @PutMapping("/{id}")
-    public Resource updateResource(@PathVariable Long id, @RequestBody Resource resource) {
+    public Resource updateResource(@PathVariable String id, @RequestBody Resource resource) {
         return resourceService.updateResource(id, resource);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteResource(@PathVariable Long id) {
+    public void deleteResource(@PathVariable String id) {
         resourceService.deleteResource(id);
     }
 }

@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 
 public class NotificationDto {
 
-    private Long id;
+    private String id;
     private String message;
     private NotificationType type;
     private boolean isRead;
@@ -14,7 +14,7 @@ public class NotificationDto {
     public NotificationDto() {
     }
 
-    public NotificationDto(Long id, String message, NotificationType type, boolean isRead, LocalDateTime createdAt) {
+    public NotificationDto(String id, String message, NotificationType type, boolean isRead, LocalDateTime createdAt) {
         this.id = id;
         this.message = message;
         this.type = type;
@@ -22,11 +22,11 @@ public class NotificationDto {
         this.createdAt = createdAt;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

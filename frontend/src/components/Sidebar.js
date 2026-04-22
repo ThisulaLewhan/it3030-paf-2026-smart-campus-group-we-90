@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 // By adding the 'allowedRoles' array prop, we dynamically secure elements from the DOM without writing dozens of messy if-else checks
 const moduleLinks = [
   // Universally visible to any logged-in student/user
+  { to: "/profile", label: "My Profile" },
   { to: "/resources", label: "Resources" }, 
   { to: "/bookings", label: "Bookings" },
   { to: "/tickets", label: "Support Tickets" },

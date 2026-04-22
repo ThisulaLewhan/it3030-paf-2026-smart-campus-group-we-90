@@ -14,6 +14,8 @@ import ResourcesPage from "./pages/Resources/ResourcesPage";
 import TicketsPage from "./pages/Tickets/TicketsPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 
+import ProfilePage from "./pages/Profile/ProfilePage";
+
 function App() {
   return (
     <AuthProvider>
@@ -32,6 +34,7 @@ function App() {
           <Route path="/" element={<MainLayout />}>
             <Route index element={<Home />} />
             <Route path="dashboard" element={<Home />} />
+            <Route path="profile" element={<ProfilePage />} />
             <Route path="resources" element={<ResourcesPage />} />
             <Route path="bookings" element={<BookingsPage />} />
             <Route path="tickets" element={<TicketsPage />} />

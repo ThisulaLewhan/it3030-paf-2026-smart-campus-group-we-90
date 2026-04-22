@@ -16,6 +16,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.security.config.Customizer;
+
+import java.util.Arrays;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity // Specifically enables method-level security like @PreAuthorize("hasRole('ADMIN')")
@@ -30,8 +37,28 @@ public class SecurityConfig {
     }
 
     @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        // Allow the React frontend origin
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
+        // Allow standard HTTP methods + OPTIONS for preflight
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        // Explicitly allow Authorization header
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        // Allow credentials (necessary if cookies/auth headers are involved in cross-origin)
+        configuration.setAllowCredentials(true);
+        
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        // Apply this CORS configuration to all API routes
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
+            // Enable CORS using the corsConfigurationSource bean we just defined
+            .cors(Customizer.withDefaults())
             // Disable CSRF since this is a stateless REST API built for clients like React/mobile
             .csrf(AbstractHttpConfigurer::disable)
             

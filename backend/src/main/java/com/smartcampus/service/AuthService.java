@@ -137,8 +137,8 @@ public class AuthService {
             User newUser = new User();
             newUser.setEmail(email);
             newUser.setName(name != null ? name : "Google User");
-            // Set a random dummy password since they log in via OAuth2
-            newUser.setPassword(UUID.randomUUID().toString());
+            // Set an empty dummy password since they log in via OAuth2
+            newUser.setPassword("");
             newUser.setRole(com.smartcampus.entity.Role.USER);
             newUser.setAuthProvider("google");
             return userRepository.save(newUser);

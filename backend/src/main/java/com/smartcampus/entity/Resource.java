@@ -1,6 +1,7 @@
 package com.smartcampus.entity;
 
 import jakarta.persistence.*;
+import java.time.LocalTime;
 
 @Entity
 @Table(name = "resources")
@@ -13,30 +14,39 @@ public class Resource {
     @Column(nullable = false)
     private String name;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String type; // e.g., lecture hall, lab, meeting room, equipment
+    private ResourceType type;
 
     private Integer capacity;
 
     private String location;
 
-    private String availabilityWindows; // e.g., "08:00-18:00"
+    private LocalTime availabilityStart;
+
+    private LocalTime availabilityEnd;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private ResourceStatus status = ResourceStatus.ACTIVE;
+    private ResourceStatus status;
+
+    // ── Constructors ─────────────────────────────────────────────────────────
 
     public Resource() {
     }
 
-    public Resource(String name, String type, Integer capacity, String location, String availabilityWindows, ResourceStatus status) {
+    public Resource(String name, ResourceType type, Integer capacity, String location,
+                    LocalTime availabilityStart, LocalTime availabilityEnd, ResourceStatus status) {
         this.name = name;
         this.type = type;
         this.capacity = capacity;
         this.location = location;
-        this.availabilityWindows = availabilityWindows;
+        this.availabilityStart = availabilityStart;
+        this.availabilityEnd = availabilityEnd;
         this.status = status;
     }
+
+    // ── Getters & Setters ─────────────────────────────────────────────────────
 
     public Long getId() {
         return id;
@@ -54,11 +64,11 @@ public class Resource {
         this.name = name;
     }
 
-    public String getType() {
+    public ResourceType getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(ResourceType type) {
         this.type = type;
     }
 
@@ -78,12 +88,20 @@ public class Resource {
         this.location = location;
     }
 
-    public String getAvailabilityWindows() {
-        return availabilityWindows;
+    public LocalTime getAvailabilityStart() {
+        return availabilityStart;
     }
 
-    public void setAvailabilityWindows(String availabilityWindows) {
-        this.availabilityWindows = availabilityWindows;
+    public void setAvailabilityStart(LocalTime availabilityStart) {
+        this.availabilityStart = availabilityStart;
+    }
+
+    public LocalTime getAvailabilityEnd() {
+        return availabilityEnd;
+    }
+
+    public void setAvailabilityEnd(LocalTime availabilityEnd) {
+        this.availabilityEnd = availabilityEnd;
     }
 
     public ResourceStatus getStatus() {

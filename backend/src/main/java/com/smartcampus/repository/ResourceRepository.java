@@ -4,11 +4,8 @@ import com.smartcampus.entity.Resource;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
+// TODO: Add custom query methods in the next step
 @Repository
 public interface ResourceRepository extends JpaRepository<Resource, Long> {
-    List<Resource> findByType(String type);
-    List<Resource> findByCapacityGreaterThanEqual(Integer capacity);
-    List<Resource> findByLocationContainingIgnoreCase(String location);
+
 }

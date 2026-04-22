@@ -41,5 +41,9 @@ public class ResourceController {
         return ResponseEntity.ok(resourceService.updateResource(id, request));
     }
 
-    // Additional endpoints (DELETE) will be added in later steps
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteResource(@PathVariable Long id) {
+        resourceService.deleteResource(id);
+        return ResponseEntity.noContent().build();
+    }
 }

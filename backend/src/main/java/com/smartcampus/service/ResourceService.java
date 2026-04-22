@@ -58,5 +58,9 @@ public class ResourceService {
         return ResourceResponse.from(updatedResource);
     }
 
-    // Additional service methods (delete) will be added in later steps
+    public void deleteResource(Long id) {
+        Resource resource = resourceRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(id));
+        resourceRepository.delete(resource);
+    }
 }

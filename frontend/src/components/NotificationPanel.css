@@ -5,36 +5,39 @@
 }
 
 .notification-bell {
-  background: transparent;
-  border: none;
+  width: 2.35rem;
+  height: 2.35rem;
+  background: rgba(148, 163, 184, 0.08);
+  border: 1px solid rgba(148, 163, 184, 0.18);
   cursor: pointer;
-  padding: 8px;
+  padding: 0;
   position: relative;
-  color: #4a5568;
-  border-radius: 50%;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  color: #cbd5e1;
+  border-radius: 999px;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .notification-bell:hover {
-  background-color: #edf2f7;
-  color: #2d3748;
+  background-color: rgba(148, 163, 184, 0.16);
+  border-color: rgba(148, 163, 184, 0.26);
+  color: #f8fafc;
 }
 
 .notification-badge {
   position: absolute;
-  top: 4px;
-  right: 4px;
+  top: 1px;
+  right: 1px;
   background-color: #e53e3e;
   color: white;
-  font-size: 0.7rem;
+  font-size: 0.64rem;
   font-weight: 700;
-  height: 18px;
-  min-width: 18px;
-  padding: 0 4px;
-  border-radius: 10px;
+  height: 16px;
+  min-width: 16px;
+  padding: 0 3px;
+  border-radius: 999px;
   display: flex;
   align-items: center;
   justify-content: center;

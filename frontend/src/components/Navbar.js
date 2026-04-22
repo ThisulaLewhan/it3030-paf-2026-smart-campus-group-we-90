@@ -5,65 +5,77 @@ import NotificationPanel from "./NotificationPanel";
 function Navbar() {
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
+  const displayName = user?.name || "Campus User";
+  const firstName = displayName.split(" ")[0];
+  const initials = displayName
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("") || "CU";
 
   const handleLogout = () => {
     logout();
-    // Bounce them back to the login wall instantaneously
     navigate("/login");
   };
 
   return (
-    <header className="app-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 20px' }}>
-      <div className="app-brand" style={{ fontWeight: 'bold', fontSize: '1.2rem', color: '#2d3748' }}>Smart Campus</div>
-      
-      <nav style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-        
+    <header className="app-header">
+      <div className="app-header-inner">
+        <NavLink to="/dashboard" className="app-brand" aria-label="Go to dashboard">
+          <span className="app-brand-mark">SC</span>
+          <span className="app-brand-copy">
+            <span className="app-brand-title">Smart Campus</span>
+            <span className="app-brand-subtitle">Admin and user workspace</span>
+          </span>
+        </NavLink>
+
         {isAuthenticated ? (
-          <>
-            <NavLink className={({ isActive }) => (isActive ? "active" : "")} to="/dashboard" style={{ textDecoration: 'none', color: '#4a5568' }}>
+          <nav className="app-nav">
+            <NavLink
+              className={({ isActive }) =>
+                `app-nav-link${isActive ? " active" : ""}`
+              }
+              to="/dashboard"
+            >
               Dashboard
             </NavLink>
 
-            {/* Isolated Notification System injected seamlessly */}
             <NotificationPanel />
 
-            {/* Quick User Actions */}
-            <div className="user-controls" style={{ display: 'flex', alignItems: 'center', gap: '15px', borderLeft: '1px solid #e2e8f0', paddingLeft: '15px' }}>
-              <span style={{ fontSize: '0.9rem', color: '#4a5568' }}>
-                {user?.name || 'Loading...'} 
-                {user?.role && <span style={{ fontSize: '0.7rem', background: '#cdf6e3', color: '#047857', padding: '2px 6px', borderRadius: '4px', marginLeft: '6px' }}>{user.role}</span>}
-              </span>
-              
-              <button 
+            <div className="header-user-cluster">
+              <NavLink
+                to="/profile"
+                className="header-user-card"
+                aria-label="Open profile"
+              >
+                <span className="header-user-avatar">{initials}</span>
+                <span className="header-user-copy">
+                  <span className="header-user-greeting">Signed in as {firstName}</span>
+                  <span className="header-user-name-row">
+                    <span className="header-user-name">{displayName}</span>
+                  </span>
+                </span>
+              </NavLink>
+
+              <button
+                type="button"
+                className="header-logout-button"
                 onClick={handleLogout}
-                style={{
-                  background: 'transparent',
-                  border: '1px solid #cbd5e0',
-                  color: '#4a5568',
-                  padding: '6px 12px',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontSize: '0.85rem',
-                  transition: 'background 0.2s'
-                }}
-                onMouseOver={(e) => e.target.style.background = '#f7fafc'}
-                onMouseOut={(e) => e.target.style.background = 'transparent'}
               >
                 Logout
               </button>
             </div>
-          </>
+          </nav>
         ) : (
           <NavLink
-            className={({ isActive }) => (isActive ? "active" : "")}
+            className="app-nav-link"
             to="/login"
-            style={{ textDecoration: 'none', color: '#3182ce', fontWeight: 'bold' }}
           >
             Secure Login
           </NavLink>
         )}
-
-      </nav>
+      </div>
     </header>
   );
 }

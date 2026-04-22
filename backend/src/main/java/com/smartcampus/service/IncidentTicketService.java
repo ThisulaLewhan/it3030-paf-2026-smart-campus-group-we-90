@@ -4,6 +4,7 @@ import com.smartcampus.dto.AssignDTO;
 import com.smartcampus.dto.IncidentTicketDTO;
 import com.smartcampus.dto.RejectDTO;
 import com.smartcampus.dto.StatusUpdateDTO;
+import com.smartcampus.dto.TicketFilterDTO;
 import com.smartcampus.entity.IncidentTicket;
 import com.smartcampus.entity.IncidentTicket.Status;
 import com.smartcampus.entity.User;
@@ -11,6 +12,7 @@ import com.smartcampus.repository.IncidentTicketRepository;
 import com.smartcampus.repository.UserRepository;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
@@ -18,6 +20,9 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -35,11 +40,14 @@ public class IncidentTicketService {
 
     private final IncidentTicketRepository incidentTicketRepository;
     private final UserRepository userRepository;
+    private final MongoTemplate mongoTemplate;
 
     public IncidentTicketService(IncidentTicketRepository incidentTicketRepository,
-                                  UserRepository userRepository) {
+                                  UserRepository userRepository,
+                                  MongoTemplate mongoTemplate) {
         this.incidentTicketRepository = incidentTicketRepository;
         this.userRepository = userRepository;
+        this.mongoTemplate = mongoTemplate;
     }
 
     public IncidentTicket createTicket(IncidentTicketDTO dto, String createdBy) {
@@ -72,6 +80,44 @@ public class IncidentTicketService {
 
     public List<IncidentTicket> getTicketsByUser(String username) {
         return incidentTicketRepository.findByCreatedBy(username);
+    }
+
+    /**
+     * Dynamic filtered search. Non-admin callers always have createdBy forced to their
+     * own username regardless of any createdBy value in the filter.
+     */
+    public List<IncidentTicket> searchTickets(TicketFilterDTO filter, String caller, boolean isAdmin) {
+        List<Criteria> criteriaList = new ArrayList<>();
+
+        if (filter.getStatus() != null) {
+            criteriaList.add(Criteria.where("status").is(filter.getStatus()));
+        }
+        if (filter.getPriority() != null) {
+            criteriaList.add(Criteria.where("priority").is(filter.getPriority()));
+        }
+        if (filter.getCategory() != null) {
+            criteriaList.add(Criteria.where("category").is(filter.getCategory()));
+        }
+        if (filter.getAssignedTechnician() != null && !filter.getAssignedTechnician().isBlank()) {
+            criteriaList.add(Criteria.where("assignedTechnician").is(filter.getAssignedTechnician()));
+        }
+
+        if (isAdmin) {
+            // Admin may optionally filter by a specific createdBy
+            if (filter.getCreatedBy() != null && !filter.getCreatedBy().isBlank()) {
+                criteriaList.add(Criteria.where("createdBy").is(filter.getCreatedBy()));
+            }
+        } else {
+            // Non-admin: always restrict to their own tickets
+            criteriaList.add(Criteria.where("createdBy").is(caller));
+        }
+
+        Query query = new Query();
+        if (!criteriaList.isEmpty()) {
+            query.addCriteria(new Criteria().andOperator(criteriaList.toArray(new Criteria[0])));
+        }
+
+        return mongoTemplate.find(query, IncidentTicket.class);
     }
 
     public IncidentTicket updateStatus(String id, StatusUpdateDTO dto) {

@@ -4,7 +4,11 @@ import com.smartcampus.dto.AssignDTO;
 import com.smartcampus.dto.IncidentTicketDTO;
 import com.smartcampus.dto.RejectDTO;
 import com.smartcampus.dto.StatusUpdateDTO;
+import com.smartcampus.dto.TicketFilterDTO;
 import com.smartcampus.entity.IncidentTicket;
+import com.smartcampus.entity.IncidentTicket.Category;
+import com.smartcampus.entity.IncidentTicket.Priority;
+import com.smartcampus.entity.IncidentTicket.Status;
 import com.smartcampus.service.IncidentTicketService;
 
 import java.util.List;
@@ -19,6 +23,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -81,19 +86,32 @@ public class IncidentTicketController {
 
     /**
      * GET /api/incident-tickets
-     * Admins receive all tickets. Regular users receive only their own.
+     * Supports optional query parameters: status, priority, category, assignedTechnician, createdBy.
+     * Admins see all matching tickets; users only see their own (createdBy filter is enforced server-side).
      * Returns 200 OK, or 403 if not authenticated.
      */
     @GetMapping
-    public ResponseEntity<List<IncidentTicket>> getTickets(Authentication auth) {
+    public ResponseEntity<List<IncidentTicket>> getTickets(
+            @RequestParam(required = false) Status status,
+            @RequestParam(required = false) Priority priority,
+            @RequestParam(required = false) Category category,
+            @RequestParam(required = false) String assignedTechnician,
+            @RequestParam(required = false) String createdBy,
+            Authentication auth) {
 
         if (auth == null || !auth.isAuthenticated()) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        List<IncidentTicket> tickets = isAdmin(auth)
-                ? incidentTicketService.getAllTickets()
-                : incidentTicketService.getTicketsByUser(auth.getName());
+        TicketFilterDTO filter = new TicketFilterDTO();
+        filter.setStatus(status);
+        filter.setPriority(priority);
+        filter.setCategory(category);
+        filter.setAssignedTechnician(assignedTechnician);
+        filter.setCreatedBy(createdBy);
+
+        List<IncidentTicket> tickets = incidentTicketService.searchTickets(
+                filter, auth.getName(), isAdmin(auth));
 
         return ResponseEntity.ok(tickets);
     }

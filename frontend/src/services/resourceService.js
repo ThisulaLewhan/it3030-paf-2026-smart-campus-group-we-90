@@ -1,7 +1,9 @@
-// Module A – Facilities & Assets Catalogue
-// TODO: Implement API calls (getAll, getById, create, update, remove) in the next step
+import api from "./api";
+
+const endpoint = "/resources";
+
 const resourceService = {
-  // Service methods will be added in the next implementation step
+  getAll: () => api.get(endpoint),
 };
 
 export default resourceService;

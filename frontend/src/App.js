@@ -9,6 +9,7 @@ import OAuth2RedirectHandler from "./pages/Auth/OAuth2RedirectHandler";
 import BookingsPage from "./pages/Bookings/BookingsPage";
 import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
+import UserActivityPage from "./pages/Activity/UserActivityPage";
 import NotificationPreferencesPage from "./pages/Notifications/NotificationPreferencesPage";
 import NotificationsPage from "./pages/Notifications/NotificationsPage";
 import ResourcesPage from "./pages/Resources/ResourcesPage";
@@ -40,6 +41,7 @@ function App() {
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="dashboard" element={<Home />} />
               <Route path="profile" element={<ProfilePage />} />
+              <Route path="activity" element={<UserActivityPage />} />
               <Route path="security" element={<AccountSecurityPage />} />
               <Route path="resources" element={<ResourcesPage />} />
               <Route path="bookings" element={<BookingsPage />} />

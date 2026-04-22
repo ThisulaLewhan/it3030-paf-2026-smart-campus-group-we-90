@@ -1,6 +1,6 @@
 import React from 'react';
 
-function ResourceCard({ resource }) {
+function ResourceCard({ resource, onEdit }) {
   // Utility for status color mapping
   const getStatusColor = (status) => {
     switch (status) {
@@ -41,6 +41,15 @@ function ResourceCard({ resource }) {
         <p style={{ margin: 0 }}><strong>Type:</strong> {resource.type}</p>
         <p style={{ margin: 0 }}><strong>Capacity:</strong> {resource.capacity} people</p>
         <p style={{ margin: 0 }}><strong>Location:</strong> {resource.location}</p>
+      </div>
+
+      <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid #eee', paddingTop: '12px' }}>
+         <button 
+            onClick={() => onEdit(resource)}
+            style={{ padding: '6px 12px', backgroundColor: '#f1f3f4', color: '#333', border: '1px solid #dadce0', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
+         >
+           Edit
+         </button>
       </div>
     </div>
   );

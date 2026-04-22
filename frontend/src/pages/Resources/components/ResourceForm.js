@@ -1,8 +1,19 @@
 import React, { useState } from 'react';
 import resourceService from '../../services/resourceService';
 
-function ResourceForm({ onResourceAdded, onCancel }) {
-  const [formData, setFormData] = useState({
+function ResourceForm({ onResourceSaved, onCancel, initialData }) {
+  const isEditing = !!initialData;
+  
+  const formatTime = (timeStr) => {
+    if (!timeStr) return '';
+    return timeStr.substring(0, 5); // Extracts "HH:mm" from "HH:mm:ss"
+  };
+
+  const [formData, setFormData] = useState(initialData ? {
+    ...initialData,
+    availabilityStart: formatTime(initialData.availabilityStart),
+    availabilityEnd: formatTime(initialData.availabilityEnd),
+  } : {
     name: '',
     type: 'LECTURE_HALL',
     capacity: 1,
@@ -58,15 +69,19 @@ function ResourceForm({ onResourceAdded, onCancel }) {
       if (!payload.availabilityEnd) payload.availabilityEnd = null;
       if (payload.capacity) payload.capacity = parseInt(payload.capacity, 10);
 
-      await resourceService.create(payload);
-      onResourceAdded();
+      if (isEditing) {
+        await resourceService.update(initialData.id, payload);
+      } else {
+        await resourceService.create(payload);
+      }
+      onResourceSaved();
     } catch (err) {
-      console.error("Error creating resource:", err);
+      console.error("Error saving resource:", err);
       // Map global error from response if available
       if (err.response && err.response.data && err.response.data.error) {
          setErrors({ global: err.response.data.error });
       } else {
-         setErrors({ global: "Failed to add resource. Please check inputs and try again." });
+         setErrors({ global: "Failed to save resource. Please check inputs and try again." });
       }
     } finally {
       setIsSubmitting(false);
@@ -75,7 +90,7 @@ function ResourceForm({ onResourceAdded, onCancel }) {
 
   return (
     <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', marginBottom: '24px' }}>
-      <h2 style={{ marginTop: 0, marginBottom: '20px', color: '#2c3e50' }}>Add New Resource</h2>
+      <h2 style={{ marginTop: 0, marginBottom: '20px', color: '#2c3e50' }}>{isEditing ? 'Edit Resource' : 'Add New Resource'}</h2>
       
       {errors.global && (
         <div style={{ padding: '10px', backgroundColor: '#fee2e2', color: '#991b1b', borderRadius: '4px', marginBottom: '16px' }}>
@@ -187,7 +202,7 @@ function ResourceForm({ onResourceAdded, onCancel }) {
             disabled={isSubmitting}
             style={{ padding: '10px 16px', borderRadius: '4px', border: 'none', backgroundColor: '#137333', color: '#fff', cursor: isSubmitting ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}
           >
-            {isSubmitting ? 'Adding...' : 'Save Resource'}
+            {isSubmitting ? 'Saving...' : (isEditing ? 'Update Resource' : 'Save Resource')}
           </button>
         </div>
       </form>

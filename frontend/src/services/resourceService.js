@@ -5,6 +5,7 @@ const endpoint = "/resources";
 const resourceService = {
   getAll: () => api.get(endpoint),
   create: (data) => api.post(endpoint, data),
+  update: (id, data) => api.put(`${endpoint}/${id}`, data),
 };
 
 export default resourceService;

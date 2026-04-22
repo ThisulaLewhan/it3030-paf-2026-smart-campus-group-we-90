@@ -8,6 +8,7 @@ function ResourcesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingResource, setEditingResource] = useState(null);
 
   useEffect(() => {
     fetchResources();
@@ -27,9 +28,21 @@ function ResourcesPage() {
     }
   };
 
-  const handleResourceAdded = () => {
+  const handleResourceSaved = () => {
     setShowAddForm(false);
+    setEditingResource(null);
     fetchResources();
+  };
+
+  const handleEditClick = (resource) => {
+    setEditingResource(resource);
+    setShowAddForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleCancelForm = () => {
+    setShowAddForm(false);
+    setEditingResource(null);
   };
 
   return (
@@ -43,7 +56,7 @@ function ResourcesPage() {
         </div>
         {!showAddForm && (
           <button 
-            onClick={() => setShowAddForm(true)}
+            onClick={() => { setEditingResource(null); setShowAddForm(true); }}
             style={{ padding: '10px 16px', backgroundColor: '#1a73e8', color: '#fff', border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer' }}
           >
             + Add Resource
@@ -59,8 +72,9 @@ function ResourcesPage() {
 
       {showAddForm && (
         <ResourceForm 
-          onResourceAdded={handleResourceAdded} 
-          onCancel={() => setShowAddForm(false)} 
+          initialData={editingResource}
+          onResourceSaved={handleResourceSaved} 
+          onCancel={handleCancelForm} 
         />
       )}
 
@@ -69,7 +83,7 @@ function ResourcesPage() {
           Loading resources...
         </div>
       ) : (
-        <ResourceList resources={resources} />
+        <ResourceList resources={resources} onEdit={handleEditClick} />
       )}
     </section>
   );

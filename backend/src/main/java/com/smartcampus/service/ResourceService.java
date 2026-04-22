@@ -1,8 +1,11 @@
 package com.smartcampus.service;
 
 import com.smartcampus.dto.ResourceRequest;
+import com.smartcampus.dto.ResourceResponse;
 import com.smartcampus.entity.Resource;
 import com.smartcampus.repository.ResourceRepository;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,5 +28,12 @@ public class ResourceService {
         return resourceRepository.save(resource);
     }
 
-    // Additional service methods (getAll, getById, update, delete) will be added in later steps
+    public List<ResourceResponse> getAllResources() {
+        return resourceRepository.findAll()
+                .stream()
+                .map(ResourceResponse::from)
+                .collect(Collectors.toList());
+    }
+
+    // Additional service methods (getById, update, delete) will be added in later steps
 }

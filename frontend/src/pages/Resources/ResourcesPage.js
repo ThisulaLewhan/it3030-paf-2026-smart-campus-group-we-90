@@ -119,8 +119,18 @@ function ResourcesPage() {
       )}
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
-          Loading resources...
+        <div style={{ textAlign: 'center', padding: '80px 20px', color: '#64748b', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+          <style>
+            {`
+              @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            `}
+          </style>
+          <div style={{ 
+            width: '40px', height: '40px', 
+            border: '4px solid #e2e8f0', borderTop: '4px solid #3b82f6', 
+            borderRadius: '50%', animation: 'spin 1s linear infinite' 
+          }} />
+          <span style={{ fontSize: '16px', fontWeight: '500' }}>Loading resources...</span>
         </div>
       ) : (
         <ResourceList resources={resources} onEdit={handleEditClick} onDelete={handleDeleteClick} />

@@ -4,8 +4,10 @@ import ResourceCard from './ResourceCard';
 function ResourceList({ resources, onEdit, onDelete }) {
   if (!resources || resources.length === 0) {
     return (
-      <div style={{ padding: '20px', textAlign: 'center', color: '#666', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
-        No resources found.
+      <div style={{ padding: '60px 20px', textAlign: 'center', color: '#64748b', backgroundColor: '#f8fafc', borderRadius: '12px', border: '2px dashed #e2e8f0', marginTop: '20px' }}>
+        <div style={{ fontSize: '48px', marginBottom: '16px' }}>📭</div>
+        <h3 style={{ margin: '0 0 8px 0', color: '#334155', fontSize: '20px' }}>No resources found</h3>
+        <p style={{ margin: 0, fontSize: '15px' }}>Try adjusting your search filters or add a new resource.</p>
       </div>
     );
   }

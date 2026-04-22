@@ -1,0 +1,225 @@
+.security-page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: grid;
+  gap: 1.5rem;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.security-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.75rem 2rem;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 55%, #eff6ff 100%);
+  border: 1px solid #dbeafe;
+}
+
+.security-eyebrow {
+  margin: 0 0 0.4rem;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #2563eb;
+  font-weight: 700;
+}
+
+.security-hero h1 {
+  margin: 0;
+  font-size: 2rem;
+  color: #0f172a;
+}
+
+.security-subtitle {
+  margin: 0.65rem 0 0;
+  color: #475569;
+  font-size: 0.98rem;
+  max-width: 620px;
+}
+
+.security-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 2rem;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+.security-card-header {
+  margin-bottom: 1.5rem;
+}
+
+.security-card-header h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.25rem;
+  color: #0f172a;
+}
+
+.security-card-header p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+.security-grid,
+.security-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+}
+
+.security-item label,
+.security-field label {
+  display: block;
+  font-size: 0.85rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.security-item-value,
+.security-field input {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 52px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+  color: #334155;
+  font-size: 1rem;
+}
+
+.security-field input {
+  outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.security-field input:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.18);
+}
+
+.security-field-full {
+  grid-column: 1 / -1;
+}
+
+.input-error {
+  border-color: #f87171 !important;
+}
+
+.field-error {
+  margin: 0.5rem 0 0;
+  color: #b91c1c;
+  font-size: 0.88rem;
+}
+
+.security-form {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.security-status {
+  padding: 1rem 1.1rem;
+  border-radius: 12px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  font-weight: 500;
+}
+
+.security-status-error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.security-status-success {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+}
+
+.security-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.security-primary-button,
+.security-logout-button {
+  border: 0;
+  border-radius: 10px;
+  color: #f8fafc;
+  padding: 0.8rem 1.15rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+}
+
+.security-primary-button {
+  background: #2563eb;
+}
+
+.security-logout-button {
+  background: #0f172a;
+}
+
+.security-primary-button:hover,
+.security-logout-button:hover {
+  transform: translateY(-1px);
+}
+
+.security-primary-button:hover {
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.18);
+}
+
+.security-logout-button:hover {
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.14);
+}
+
+.security-primary-button:disabled,
+.security-field input:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .security-page {
+    padding: 1rem;
+  }
+
+  .security-hero,
+  .security-card {
+    padding: 1.25rem;
+  }
+
+  .security-hero {
+    flex-direction: column;
+  }
+
+  .security-actions {
+    justify-content: stretch;
+  }
+
+  .security-primary-button,
+  .security-logout-button {
+    width: 100%;
+  }
+}

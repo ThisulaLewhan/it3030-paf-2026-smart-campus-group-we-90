@@ -1,6 +1,7 @@
 package com.smartcampus.controller;
 
 import com.smartcampus.dto.AuthResponseDto;
+import com.smartcampus.dto.ChangePasswordRequestDto;
 import com.smartcampus.dto.LoginRequestDto;
 import com.smartcampus.dto.RegisterRequestDto;
 import com.smartcampus.dto.UserDto;
@@ -59,5 +60,11 @@ public class AuthController {
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<Void> changePassword(@Valid @RequestBody ChangePasswordRequestDto request) {
+        authService.changePassword(request);
+        return ResponseEntity.noContent().build();
     }
 }

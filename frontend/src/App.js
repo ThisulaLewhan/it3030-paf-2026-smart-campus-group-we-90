@@ -13,6 +13,7 @@ import NotificationsPage from "./pages/Notifications/NotificationsPage";
 import ResourcesPage from "./pages/Resources/ResourcesPage";
 import TicketsPage from "./pages/Tickets/TicketsPage";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AccountSecurityPage from "./pages/Security/AccountSecurityPage";
 
 import ProfilePage from "./pages/Profile/ProfilePage";
 
@@ -36,6 +37,7 @@ function App() {
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="dashboard" element={<Home />} />
               <Route path="profile" element={<ProfilePage />} />
+              <Route path="security" element={<AccountSecurityPage />} />
               <Route path="resources" element={<ResourcesPage />} />
               <Route path="bookings" element={<BookingsPage />} />
               <Route path="tickets" element={<TicketsPage />} />

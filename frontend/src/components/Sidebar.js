@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext";
 const moduleLinks = [
   // Universally visible to any logged-in student/user
   { to: "/profile", label: "My Profile" },
+  { to: "/security", label: "Account Security" },
   { to: "/resources", label: "Resources" }, 
   { to: "/bookings", label: "Bookings" },
   { to: "/tickets", label: "Support Tickets" },

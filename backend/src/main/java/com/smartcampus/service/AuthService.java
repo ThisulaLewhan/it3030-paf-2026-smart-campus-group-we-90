@@ -1,6 +1,7 @@
 package com.smartcampus.service;
 
 import com.smartcampus.dto.AuthResponseDto;
+import com.smartcampus.dto.ChangePasswordRequestDto;
 import com.smartcampus.dto.LoginRequestDto;
 import com.smartcampus.dto.RegisterRequestDto;
 import com.smartcampus.dto.UserDto;
@@ -166,5 +167,26 @@ public class AuthService {
                 user.getPhoneNumber(),
                 user.getCreatedAt()
         );
+    }
+
+    @Transactional
+    public void changePassword(ChangePasswordRequestDto request) {
+        User user = getCurrentlyAuthenticatedUser();
+
+        String authProvider = user.getAuthProvider() == null ? "local" : user.getAuthProvider().toLowerCase();
+        if (!"local".equals(authProvider)) {
+            throw new IllegalArgumentException("Password changes are only available for email and password accounts.");
+        }
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("Current password is incorrect.");
+        }
+
+        if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("New password must be different from your current password.");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
     }
 }

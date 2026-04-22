@@ -42,5 +42,21 @@ public class ResourceService {
         return ResourceResponse.from(resource);
     }
 
-    // Additional service methods (update, delete) will be added in later steps
+    public ResourceResponse updateResource(Long id, ResourceRequest request) {
+        Resource resource = resourceRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(id));
+
+        resource.setName(request.getName());
+        resource.setType(request.getType());
+        resource.setCapacity(request.getCapacity());
+        resource.setLocation(request.getLocation());
+        resource.setAvailabilityStart(request.getAvailabilityStart());
+        resource.setAvailabilityEnd(request.getAvailabilityEnd());
+        resource.setStatus(request.getStatus());
+
+        Resource updatedResource = resourceRepository.save(resource);
+        return ResourceResponse.from(updatedResource);
+    }
+
+    // Additional service methods (delete) will be added in later steps
 }

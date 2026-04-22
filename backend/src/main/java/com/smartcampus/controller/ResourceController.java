@@ -36,5 +36,10 @@ public class ResourceController {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    // Additional endpoints (PUT, DELETE) will be added in later steps
+    @PutMapping("/{id}")
+    public ResponseEntity<ResourceResponse> updateResource(@PathVariable Long id, @Valid @RequestBody ResourceRequest request) {
+        return ResponseEntity.ok(resourceService.updateResource(id, request));
+    }
+
+    // Additional endpoints (DELETE) will be added in later steps
 }

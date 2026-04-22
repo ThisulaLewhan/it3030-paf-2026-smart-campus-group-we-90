@@ -8,7 +8,8 @@ import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
 import NotificationsPage from "./pages/Notifications/NotificationsPage";
 import ResourcesPage from "./pages/Resources/ResourcesPage";
-import TicketsPage from "./pages/Tickets/TicketsPage";
+import TicketDetailPage from "./pages/Tickets/TicketDetailPage";
+import TicketListPage from "./pages/Tickets/TicketListPage";
 
 function App() {
   return (
@@ -19,7 +20,8 @@ function App() {
             <Route index element={<Home />} />
             <Route path="resources" element={<ResourcesPage />} />
             <Route path="bookings" element={<BookingsPage />} />
-            <Route path="tickets" element={<TicketsPage />} />
+            <Route path="tickets" element={<TicketListPage />} />
+            <Route path="tickets/:id" element={<TicketDetailPage />} />
             <Route path="notifications" element={<NotificationsPage />} />
             <Route path="auth/login" element={<LoginPage />} />
             <Route path="*" element={<NotFound />} />

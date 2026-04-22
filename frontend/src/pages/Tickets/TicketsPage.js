@@ -1,18 +1,8 @@
-import ticketService from "../../services/ticketService";
+import { Navigate } from "react-router-dom";
 
 function TicketsPage() {
-  return (
-    <section className="page-card">
-      <h1>Tickets Module</h1>
-      <p>
-        Use this area for incident reporting, technician assignments, and issue
-        tracking across the campus.
-      </p>
-      <p>
-        Starter endpoint: <code>{ticketService.endpoint}</code>
-      </p>
-    </section>
-  );
+  return <Navigate to="/tickets" replace />;
 }
 
 export default TicketsPage;
+

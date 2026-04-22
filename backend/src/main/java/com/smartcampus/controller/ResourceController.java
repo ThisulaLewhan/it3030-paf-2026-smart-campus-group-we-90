@@ -25,11 +25,16 @@ public class ResourceController {
         return ResponseEntity.ok(resourceService.getAllResources());
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ResourceResponse> getResourceById(@PathVariable Long id) {
+        return ResponseEntity.ok(resourceService.getResourceById(id));
+    }
+
     @PostMapping
     public ResponseEntity<Resource> createResource(@Valid @RequestBody ResourceRequest request) {
         Resource created = resourceService.createResource(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    // Additional endpoints (GET by id, PUT, DELETE) will be added in later steps
+    // Additional endpoints (PUT, DELETE) will be added in later steps
 }

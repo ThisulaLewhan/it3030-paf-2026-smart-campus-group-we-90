@@ -3,6 +3,7 @@ package com.smartcampus.service;
 import com.smartcampus.dto.ResourceRequest;
 import com.smartcampus.dto.ResourceResponse;
 import com.smartcampus.entity.Resource;
+import com.smartcampus.exception.ResourceNotFoundException;
 import com.smartcampus.repository.ResourceRepository;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,5 +36,11 @@ public class ResourceService {
                 .collect(Collectors.toList());
     }
 
-    // Additional service methods (getById, update, delete) will be added in later steps
+    public ResourceResponse getResourceById(Long id) {
+        Resource resource = resourceRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(id));
+        return ResourceResponse.from(resource);
+    }
+
+    // Additional service methods (update, delete) will be added in later steps
 }

@@ -24,6 +24,11 @@ const notificationService = {
     return response.data;
   },
 
+  markAllAsRead: async () => {
+    const response = await api.put('/notifications/read-all');
+    return response.data;
+  },
+
   /**
    * Fires a heavily protected hard-deletion command. 
    * Handled gracefully returning a 204 No Content upon success.

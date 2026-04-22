@@ -4,6 +4,7 @@ import com.smartcampus.entity.Notification;
 import com.smartcampus.entity.NotificationType;
 import com.smartcampus.entity.User;
 import com.smartcampus.repository.NotificationRepository;
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
@@ -50,6 +51,21 @@ public class NotificationService {
 
         notification.setRead(true);
         return notificationRepository.save(notification);
+    }
+
+    public List<Notification> markAllAsRead() {
+        User currentUser = authService.getCurrentlyAuthenticatedUser();
+        List<Notification> notifications = notificationRepository.findByUserIdOrderByCreatedAtDesc(currentUser.getId());
+        List<Notification> updatedNotifications = new ArrayList<>();
+
+        for (Notification notification : notifications) {
+            if (!notification.isRead()) {
+                notification.setRead(true);
+                updatedNotifications.add(notificationRepository.save(notification));
+            }
+        }
+
+        return updatedNotifications;
     }
 
     /**

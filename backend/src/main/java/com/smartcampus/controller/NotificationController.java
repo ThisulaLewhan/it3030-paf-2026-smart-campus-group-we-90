@@ -46,6 +46,14 @@ public class NotificationController {
         return ResponseEntity.ok(convertToDto(notification));
     }
 
+    @PutMapping("/read-all")
+    public ResponseEntity<List<NotificationDto>> markAllAsRead() {
+        List<NotificationDto> dtos = notificationService.markAllAsRead().stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteNotification(@PathVariable Long id) {
         notificationService.deleteNotification(id);

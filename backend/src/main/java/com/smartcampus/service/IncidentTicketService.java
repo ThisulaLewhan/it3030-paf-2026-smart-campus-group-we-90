@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
@@ -40,11 +40,11 @@ public class IncidentTicketService {
 
     private final IncidentTicketRepository incidentTicketRepository;
     private final UserRepository userRepository;
-    private final MongoTemplate mongoTemplate;
+    private final MongoOperations mongoTemplate;
 
     public IncidentTicketService(IncidentTicketRepository incidentTicketRepository,
                                   UserRepository userRepository,
-                                  MongoTemplate mongoTemplate) {
+                                  MongoOperations mongoTemplate) {
         this.incidentTicketRepository = incidentTicketRepository;
         this.userRepository = userRepository;
         this.mongoTemplate = mongoTemplate;

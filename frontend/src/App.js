@@ -10,6 +10,7 @@ import NotificationsPage from "./pages/Notifications/NotificationsPage";
 import ResourcesPage from "./pages/Resources/ResourcesPage";
 import TicketDetailPage from "./pages/Tickets/TicketDetailPage";
 import TicketListPage from "./pages/Tickets/TicketListPage";
+import CreateTicketPage from "./pages/Tickets/CreateTicketPage";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
             <Route path="resources" element={<ResourcesPage />} />
             <Route path="bookings" element={<BookingsPage />} />
             <Route path="tickets" element={<TicketListPage />} />
+            <Route path="tickets/new" element={<CreateTicketPage />} />
             <Route path="tickets/:id" element={<TicketDetailPage />} />
             <Route path="notifications" element={<NotificationsPage />} />
             <Route path="auth/login" element={<LoginPage />} />

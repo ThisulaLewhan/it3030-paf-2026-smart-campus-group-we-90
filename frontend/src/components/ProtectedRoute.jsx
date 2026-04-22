@@ -25,9 +25,7 @@ const ProtectedRoute = ({ allowedRoles = [], children }) => {
     
     // Check their exact role string (USER or ADMIN) against the allowed list passed to the prop
     if (!user || !allowedRoles.includes(user.role)) {
-      // If a standard USER tries to access an explicit ADMIN route, gently 
-      // deflect them safely back into the dashboard instead of kicking them out entirely.
-      return <Navigate to="/dashboard" replace />;
+      return <Navigate to="/unauthorized" replace />;
     }
     
   }

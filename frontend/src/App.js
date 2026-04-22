@@ -15,6 +15,7 @@ import TicketsPage from "./pages/Tickets/TicketsPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AccountSecurityPage from "./pages/Security/AccountSecurityPage";
 import AdminUsersPage from "./pages/Admin/AdminUsersPage";
+import Unauthorized from "./pages/Unauthorized";
 
 import ProfilePage from "./pages/Profile/ProfilePage";
 
@@ -43,6 +44,7 @@ function App() {
               <Route path="bookings" element={<BookingsPage />} />
               <Route path="tickets" element={<TicketsPage />} />
               <Route path="notifications" element={<NotificationsPage />} />
+              <Route path="unauthorized" element={<Unauthorized />} />
               <Route path="auth/login" element={<LoginPage />} />
               <Route
                 path="admin/users"

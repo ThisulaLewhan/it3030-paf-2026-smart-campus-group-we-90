@@ -250,6 +250,63 @@
   color: #be123c;
 }
 
+.unauthorized-page {
+  min-height: calc(100vh - 180px);
+  display: grid;
+  place-items: center;
+}
+
+.unauthorized-card {
+  width: min(100%, 560px);
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 2rem;
+  text-align: center;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+.unauthorized-eyebrow {
+  margin: 0 0 0.45rem;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #dc2626;
+  font-weight: 700;
+}
+
+.unauthorized-card h1 {
+  margin: 0;
+  font-size: 2rem;
+  color: #0f172a;
+  letter-spacing: -0.03em;
+}
+
+.unauthorized-copy {
+  margin: 0.9rem 0 0;
+  color: #475569;
+  line-height: 1.65;
+}
+
+.unauthorized-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1.5rem;
+  border-radius: 10px;
+  background: #2563eb;
+  color: #f8fafc;
+  padding: 0.85rem 1.2rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.unauthorized-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.18);
+}
+
 @media (max-width: 768px) {
   .app-header {
     flex-direction: column;
@@ -277,5 +334,13 @@
 
   .dashboard-role-panel {
     min-width: 0;
+  }
+
+  .unauthorized-card {
+    padding: 1.25rem;
+  }
+
+  .unauthorized-card h1 {
+    font-size: 1.6rem;
   }
 }

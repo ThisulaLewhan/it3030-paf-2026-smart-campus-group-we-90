@@ -45,6 +45,20 @@ function ResourcesPage() {
     setEditingResource(null);
   };
 
+  const handleDeleteClick = async (id) => {
+    if (window.confirm("Are you sure you want to delete this resource? This action cannot be undone.")) {
+      try {
+        setLoading(true);
+        await resourceService.remove(id);
+        fetchResources(); // refresh list
+      } catch (err) {
+        console.error("Error deleting resource:", err);
+        setError("Failed to delete resource. Please try again.");
+        setLoading(false);
+      }
+    }
+  };
+
   return (
     <section style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
@@ -83,7 +97,7 @@ function ResourcesPage() {
           Loading resources...
         </div>
       ) : (
-        <ResourceList resources={resources} onEdit={handleEditClick} />
+        <ResourceList resources={resources} onEdit={handleEditClick} onDelete={handleDeleteClick} />
       )}
     </section>
   );

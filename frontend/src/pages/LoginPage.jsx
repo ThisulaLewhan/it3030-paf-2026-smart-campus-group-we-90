@@ -5,23 +5,16 @@ import './LoginPage.css';
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  
-  // Input tracking
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  
-  // UX State tracking
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
-    // Prevent the standard HTML form submission loop
     e.preventDefault();
-    
-    // Clean out any lingering errors before the new attempt
     setError('');
-    
-    // Quick frontend safety check before hitting the network
+
     if (!email || !password) {
       setError('Please provide both your email and password.');
       return;
@@ -30,96 +23,126 @@ const LoginPage = () => {
     setLoading(true);
 
     try {
-      // Connect specifically to the custom Axios service we finalized previously
       await authService.login(email, password);
-      
-      // If Spring Boot returns a 200 OK + JWT, transition seamlessly into the app
-      navigate('/'); 
-      
+      navigate('/');
     } catch (err) {
-      // Actively intercept failures thrown by our backend's GlobalExceptionHandler
       if (err.response && err.response.data) {
-        
-        // Dynamically extract the explicit 'message' from our ErrorResponseDto json payload
         const serverError = err.response.data.message || err.response.data.error || err.response.data;
         setError(typeof serverError === 'string' ? serverError : 'Invalid login credentials.');
-        
       } else {
         setError('Network unavailable. Ensure your Spring Boot backend is actively running!');
       }
     } finally {
-      // Guarantee buttons unlock universally no matter what happened
       setLoading(false);
     }
   };
 
   return (
     <div className="login-container">
-      <div className="login-card">
-        <h2 className="login-title">Secure Portal</h2>
-        
-        {/* Mount error conditionally only when something faults */}
-        {error && <div className="login-error">{error}</div>}
-        
-        <form onSubmit={handleSubmit}>
-          <div className="login-form-group">
-            <label className="login-label" htmlFor="email">Email</label>
-            <input
-              id="email"
-              type="email"
-              className="login-input"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@smartcampus.edu"
+      <div className="auth-shell">
+        <div className="login-card">
+          <h2 className="login-title">Sign In</h2>
+          <p className="login-subtitle">
+            Use your account details to continue.
+          </p>
+
+          {error && <div className="login-error">{error}</div>}
+
+          <form onSubmit={handleSubmit}>
+            <div className="login-form-group">
+              <label className="login-label" htmlFor="email">Email</label>
+              <input
+                id="email"
+                type="email"
+                className="login-input"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@smartcampus.edu"
+                disabled={loading}
+                required
+                autoComplete="email"
+              />
+            </div>
+
+            <div className="login-form-group">
+              <div className="login-label-row">
+                <label className="login-label" htmlFor="password">Password</label>
+              </div>
+              <div className="password-input-wrap">
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  className="login-input password-input"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  disabled={loading}
+                  required
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowPassword((current) => !current)}
+                  disabled={loading}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  aria-pressed={showPassword}
+                >
+                  {showPassword ? (
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  ) : (
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z" />
+                      <path d="M5 19l14-14" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+              <p className="login-helper-text">Use the same credentials you registered with.</p>
+            </div>
+
+            <button
+              type="submit"
+              className="login-button"
               disabled={loading}
-              required
-            />
+            >
+              {loading ? (
+                <span className="button-spinner-wrap">
+                  <span className="button-spinner"></span> Authenticating...
+                </span>
+              ) : 'Sign In'}
+            </button>
+          </form>
+
+          <div className="login-divider">
+            <span>OR</span>
           </div>
-          
-          <div className="login-form-group">
-            <label className="login-label" htmlFor="password">Password</label>
-            <input
-              id="password"
-              type="password"
-              className="login-input"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              disabled={loading}
-              required
-            />
-          </div>
-          
-          <button 
-            type="submit" 
-            className="login-button" 
+
+          <button
+            type="button"
+            className="google-login-button"
+            onClick={() => window.location.href = 'http://localhost:8080/oauth2/authorization/google'}
             disabled={loading}
           >
-            {loading ? (
-              <span className="button-spinner-wrap">
-                <span className="button-spinner"></span> Authenticating...
-              </span>
-            ) : 'Sign In'}
+            <svg className="google-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="18" height="18" aria-hidden="true">
+              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+            </svg>
+            Continue with Google
           </button>
-        </form>
 
-        <div className="login-divider">
-          <span>OR</span>
+          <p className="auth-switch-text">
+            Don&apos;t have an account? <Link to="/register" className="auth-switch-link">Create Account</Link>
+          </p>
+          <p className="auth-footer-note">
+            Protected access for students, staff, and administrators.
+          </p>
         </div>
-
-        <button 
-          type="button" 
-          className="google-login-button" 
-          onClick={() => window.location.href = 'http://localhost:8080/oauth2/authorization/google'}
-          disabled={loading}
-        >
-          <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google" className="google-logo" />
-          Sign in with Google
-        </button>
-
-        <p className="auth-switch-text">
-          Don't have an account? <Link to="/register" className="auth-switch-link">Create Account</Link>
-        </p>
       </div>
     </div>
   );

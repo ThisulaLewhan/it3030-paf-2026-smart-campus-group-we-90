@@ -3,6 +3,7 @@ package com.smartcampus.service;
 import com.smartcampus.dto.ResourceRequest;
 import com.smartcampus.dto.ResourceResponse;
 import com.smartcampus.entity.Resource;
+import com.smartcampus.entity.ResourceType;
 import com.smartcampus.exception.ResourceNotFoundException;
 import com.smartcampus.repository.ResourceRepository;
 import java.util.List;
@@ -62,5 +63,12 @@ public class ResourceService {
         Resource resource = resourceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(id));
         resourceRepository.delete(resource);
+    }
+
+    public List<ResourceResponse> searchResources(ResourceType type, Integer capacity, String location) {
+        return resourceRepository.searchResources(type, capacity, location)
+                .stream()
+                .map(ResourceResponse::from)
+                .collect(Collectors.toList());
     }
 }

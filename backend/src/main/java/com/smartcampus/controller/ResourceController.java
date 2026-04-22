@@ -3,6 +3,7 @@ package com.smartcampus.controller;
 import com.smartcampus.dto.ResourceRequest;
 import com.smartcampus.dto.ResourceResponse;
 import com.smartcampus.entity.Resource;
+import com.smartcampus.entity.ResourceType;
 import com.smartcampus.service.ResourceService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,14 @@ public class ResourceController {
     @GetMapping
     public ResponseEntity<List<ResourceResponse>> getAllResources() {
         return ResponseEntity.ok(resourceService.getAllResources());
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<ResourceResponse>> searchResources(
+            @RequestParam(required = false) ResourceType type,
+            @RequestParam(required = false) Integer capacity,
+            @RequestParam(required = false) String location) {
+        return ResponseEntity.ok(resourceService.searchResources(type, capacity, location));
     }
 
     @GetMapping("/{id}")

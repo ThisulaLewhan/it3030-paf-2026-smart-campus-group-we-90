@@ -1,5 +1,7 @@
 package com.smartcampus.dto;
 
+import java.time.LocalDateTime;
+
 import com.smartcampus.entity.Role;
 
 public class UserDto {
@@ -8,15 +10,25 @@ public class UserDto {
     private String name;
     private String email;
     private Role role;
+    private String authProvider;
+    private String phoneNumber;
+    private LocalDateTime createdAt;
 
     public UserDto() {
     }
 
     public UserDto(Long id, String name, String email, Role role) {
+        this(id, name, email, role, null, null, null);
+    }
+
+    public UserDto(Long id, String name, String email, Role role, String authProvider, String phoneNumber, LocalDateTime createdAt) {
         this.id = id;
         this.name = name;
         this.email = email;
         this.role = role;
+        this.authProvider = authProvider;
+        this.phoneNumber = phoneNumber;
+        this.createdAt = createdAt;
     }
 
     public Long getId() {
@@ -49,5 +61,29 @@ public class UserDto {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public String getAuthProvider() {
+        return authProvider;
+    }
+
+    public void setAuthProvider(String authProvider) {
+        this.authProvider = authProvider;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 }

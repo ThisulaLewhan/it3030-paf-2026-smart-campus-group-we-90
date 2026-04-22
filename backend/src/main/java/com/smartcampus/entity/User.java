@@ -1,5 +1,7 @@
 package com.smartcampus.entity;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -7,6 +9,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 @Entity
@@ -32,6 +35,12 @@ public class User {
 
     @Column(name = "auth_provider")
     private String authProvider;
+
+    @Column(name = "phone_number")
+    private String phoneNumber;
+
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
 
     public User() {
     }
@@ -90,5 +99,28 @@ public class User {
 
     public void setAuthProvider(String authProvider) {
         this.authProvider = authProvider;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    @PrePersist
+    public void prePersist() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
     }
 }

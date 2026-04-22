@@ -1,8 +1,12 @@
 package com.smartcampus.service;
 
+import com.smartcampus.dto.UpdateProfileRequestDto;
 import com.smartcampus.entity.Role;
 import com.smartcampus.entity.User;
 import com.smartcampus.repository.UserRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -20,5 +24,35 @@ public class UserService {
         
         user.setRole(newRole);
         return userRepository.save(user);
+    }
+
+    public User updateCurrentUserProfile(UpdateProfileRequestDto request) {
+        User user = getCurrentlyAuthenticatedUser();
+
+        user.setName(request.getName().trim());
+
+        String phoneNumber = request.getPhoneNumber();
+        user.setPhoneNumber(phoneNumber == null || phoneNumber.isBlank() ? null : phoneNumber.trim());
+
+        return userRepository.save(user);
+    }
+
+    private User getCurrentlyAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getPrincipal() == null) {
+            throw new com.smartcampus.exception.ForbiddenException("No authenticated user available for this request.");
+        }
+
+        Object principal = authentication.getPrincipal();
+        String userEmail;
+
+        if (principal instanceof UserDetails) {
+            userEmail = ((UserDetails) principal).getUsername();
+        } else {
+            userEmail = principal.toString();
+        }
+
+        return userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new com.smartcampus.exception.ResourceNotFoundException("Authenticated user not found."));
     }
 }

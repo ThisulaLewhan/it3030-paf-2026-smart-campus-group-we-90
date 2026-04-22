@@ -1,8 +1,10 @@
 package com.smartcampus.controller;
 
+import com.smartcampus.dto.UpdateProfileRequestDto;
 import com.smartcampus.dto.UpdateRoleRequestDto;
 import com.smartcampus.dto.UserDto;
 import com.smartcampus.entity.User;
+import com.smartcampus.service.AuthService;
 import com.smartcampus.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,9 +21,11 @@ import jakarta.validation.Valid;
 public class UserController {
 
     private final UserService userService;
+    private final AuthService authService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, AuthService authService) {
         this.userService = userService;
+        this.authService = authService;
     }
 
     @PutMapping("/{id}/role")
@@ -41,5 +45,11 @@ public class UserController {
         );
         
         return ResponseEntity.ok(userDto);
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<UserDto> updateCurrentUserProfile(@Valid @RequestBody UpdateProfileRequestDto request) {
+        User updatedUser = userService.updateCurrentUserProfile(request);
+        return ResponseEntity.ok(authService.toUserDto(updatedUser));
     }
 }

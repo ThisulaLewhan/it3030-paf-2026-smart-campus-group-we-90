@@ -54,7 +54,7 @@ public class AuthController {
 
         try {
             User user = authService.getCurrentlyAuthenticatedUser();
-            UserDto userDto = new UserDto(user.getId(), user.getName(), user.getEmail(), user.getRole());
+            UserDto userDto = authService.toUserDto(user);
             return ResponseEntity.ok(userDto);
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();

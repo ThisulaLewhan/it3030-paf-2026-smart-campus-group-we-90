@@ -60,7 +60,7 @@ public class AuthService {
         userRepository.save(user);
 
         // Build response DTO
-        UserDto userDto = new UserDto(user.getId(), user.getName(), user.getEmail(), user.getRole());
+        UserDto userDto = toUserDto(user);
 
         // Generate JWT so the user is auto-logged-in immediately
         UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
@@ -92,7 +92,7 @@ public class AuthService {
                 .orElseThrow(() -> new IllegalArgumentException("Database lookup failed after authentication"));
 
         // 3. Map entity to the safe DTO (ignoring sensitive fields like password)
-        UserDto userDto = new UserDto(user.getId(), user.getName(), user.getEmail(), user.getRole());
+        UserDto userDto = toUserDto(user);
 
         // 4. Create a minimal Spring UserDetails object just to satisfy the JwtService API
         UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
@@ -154,5 +154,17 @@ public class AuthService {
                 .build();
 
         return jwtService.generateToken(userDetails);
+    }
+
+    public UserDto toUserDto(User user) {
+        return new UserDto(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getRole(),
+                user.getAuthProvider(),
+                user.getPhoneNumber(),
+                user.getCreatedAt()
+        );
     }
 }

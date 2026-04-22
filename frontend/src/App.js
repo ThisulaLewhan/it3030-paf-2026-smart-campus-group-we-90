@@ -31,16 +31,18 @@ function App() {
           <Route path="/oauth2-redirect" element={<OAuth2RedirectHandler />} />
 
           {/* Main layout with sidebar */}
-          <Route path="/" element={<MainLayout />}>
-            <Route index element={<Home />} />
-            <Route path="dashboard" element={<Home />} />
-            <Route path="profile" element={<ProfilePage />} />
-            <Route path="resources" element={<ResourcesPage />} />
-            <Route path="bookings" element={<BookingsPage />} />
-            <Route path="tickets" element={<TicketsPage />} />
-            <Route path="notifications" element={<NotificationsPage />} />
-            <Route path="auth/login" element={<LoginPage />} />
-            <Route path="*" element={<NotFound />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/" element={<MainLayout />}>
+              <Route index element={<Navigate to="/dashboard" replace />} />
+              <Route path="dashboard" element={<Home />} />
+              <Route path="profile" element={<ProfilePage />} />
+              <Route path="resources" element={<ResourcesPage />} />
+              <Route path="bookings" element={<BookingsPage />} />
+              <Route path="tickets" element={<TicketsPage />} />
+              <Route path="notifications" element={<NotificationsPage />} />
+              <Route path="auth/login" element={<LoginPage />} />
+              <Route path="*" element={<NotFound />} />
+            </Route>
           </Route>
         </Routes>
       </BrowserRouter>

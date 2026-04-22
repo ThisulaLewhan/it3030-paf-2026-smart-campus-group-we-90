@@ -29,7 +29,7 @@ const OAuth2RedirectHandler = () => {
           await oauthLogin(token);
           
           // Move gracefully to the root secured layout
-          navigate('/');
+          navigate('/dashboard', { replace: true });
         } catch (err) {
           setError('Failed to securely fetch user profile after successful OAuth login.');
         }

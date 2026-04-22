@@ -1,28 +1,23 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import authService from '../services/authService';
 import './LoginPage.css';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
-  const { login: contextLogin } = useAuth();
-  
-  // Input tracking
+  const { register } = useAuth();
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  
-  // UX State tracking
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    
-    // Frontend validation checks
+
     if (!name || !email || !password || !confirmPassword) {
       setError('Please fill in all fields.');
       return;
@@ -41,20 +36,8 @@ const RegisterPage = () => {
     setLoading(true);
 
     try {
-      // Hit the backend register endpoint
-      const response = await authService.register(name, email, password);
-      
-      // Sync the AuthContext state with the new token + user
-      if (response.token && response.user) {
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('user', JSON.stringify(response.user));
-      }
-      
-      // Redirect to the app after successful registration
-      navigate('/');
-      // Force a full reload so AuthContext re-hydrates from the new localStorage data
-      window.location.reload();
-      
+      await register(name, email, password);
+      navigate('/dashboard', { replace: true });
     } catch (err) {
       if (err.response && err.response.data) {
         const serverError = err.response.data.message || err.response.data.error || err.response.data;
@@ -71,9 +54,9 @@ const RegisterPage = () => {
     <div className="login-container">
       <div className="login-card">
         <h2 className="login-title">Create Account</h2>
-        
+
         {error && <div className="login-error">{error}</div>}
-        
+
         <form onSubmit={handleSubmit}>
           <div className="login-form-group">
             <label className="login-label" htmlFor="reg-name">Full Name</label>
@@ -102,7 +85,7 @@ const RegisterPage = () => {
               required
             />
           </div>
-          
+
           <div className="login-form-group">
             <label className="login-label" htmlFor="reg-password">Password</label>
             <input
@@ -111,7 +94,7 @@ const RegisterPage = () => {
               className="login-input"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="********"
               disabled={loading}
               required
             />
@@ -125,15 +108,15 @@ const RegisterPage = () => {
               className="login-input"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="********"
               disabled={loading}
               required
             />
           </div>
-          
-          <button 
-            type="submit" 
-            className="login-button" 
+
+          <button
+            type="submit"
+            className="login-button"
             disabled={loading}
           >
             {loading ? (
@@ -148,9 +131,9 @@ const RegisterPage = () => {
           <span>OR</span>
         </div>
 
-        <button 
-          type="button" 
-          className="google-login-button" 
+        <button
+          type="button"
+          className="google-login-button"
           onClick={() => window.location.href = 'http://localhost:8080/oauth2/authorization/google'}
           disabled={loading}
         >

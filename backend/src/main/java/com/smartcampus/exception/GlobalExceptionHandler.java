@@ -1,6 +1,7 @@
 package com.smartcampus.exception;
 
 import com.smartcampus.dto.ErrorResponseDto;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -51,6 +52,15 @@ public class GlobalExceptionHandler {
                 .orElse("Validation failed with unspecified malformed constraints");
                 
         return buildError(HttpStatus.BAD_REQUEST, "Validation Failure", validationErrors);
+    }
+
+    @ExceptionHandler(DataAccessException.class)
+    public ResponseEntity<ErrorResponseDto> handleDataAccessException(DataAccessException ex) {
+        return buildError(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Database Error",
+                "Profile data could not be saved because the database schema is out of date. Restart the backend and try again."
+        );
     }
 
     // Final safety net intercepting unhandled crashes protecting server architecture

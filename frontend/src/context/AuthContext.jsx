@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
 import authService from '../services/authService';
 
 // Safely isolates the context instance
@@ -26,8 +26,11 @@ export const AuthProvider = ({ children }) => {
       const storedToken = localStorage.getItem('token');
       const storedUser = authService.getStoredUser();
 
-      if (storedToken && storedUser) {
+      if (storedToken) {
         setToken(storedToken);
+      }
+
+      if (storedUser) {
         setUser(storedUser);
       }
       
@@ -40,7 +43,7 @@ export const AuthProvider = ({ children }) => {
   /**
    * Universal Login Wrapper
    */
-  const login = async (email, password) => {
+  const login = useCallback(async (email, password) => {
     // Leverage the raw service layer to handle the hard HTTP requests
     const response = await authService.login(email, password);
     
@@ -49,21 +52,30 @@ export const AuthProvider = ({ children }) => {
     setUser(response.user);
     
     return response;
-  };
+  }, []);
+
+  const register = useCallback(async (name, email, password) => {
+    const response = await authService.register(name, email, password);
+
+    setToken(response.token);
+    setUser(response.user);
+
+    return response;
+  }, []);
 
   /**
    * Universal Logout Wrapper
    */
-  const logout = () => {
+  const logout = useCallback(() => {
     authService.logout();
     setToken(null);
     setUser(null);
-  };
+  }, []);
 
   /**
    * Safe refresh tool strictly pulling the exact authoritative user from the backend DB directly
    */
-  const loadCurrentUser = async () => {
+  const loadCurrentUser = useCallback(async () => {
     try {
       const userData = await authService.getCurrentUserAsync();
       
@@ -79,20 +91,24 @@ export const AuthProvider = ({ children }) => {
       }
       throw error;
     }
-  };
+  }, [logout]);
 
   /**
    * OAuth Login Wrapper
    * Ingests the raw JWT from the URL callback
    */
-  const oauthLogin = async (newToken) => {
+  const oauthLogin = useCallback(async (newToken) => {
     // Stage 1: Store the raw token precisely so the Axios Interceptor picks it up
     localStorage.setItem('token', newToken);
     setToken(newToken);
     
-    // Stage 2: Fire the standardized user refresh to pull our full profile
-    await loadCurrentUser();
-  };
+    // Stage 2: Try to pull our full profile immediately, but keep the login alive if it lags.
+    try {
+      await loadCurrentUser();
+    } catch (error) {
+      return null;
+    }
+  }, [loadCurrentUser]);
 
   // Bundle exposing all assets to descendant nodes
   const value = {
@@ -100,6 +116,7 @@ export const AuthProvider = ({ children }) => {
     token,
     loading,
     login,
+    register,
     oauthLogin,
     logout,
     loadCurrentUser,
@@ -113,3 +130,5 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+
+export default AuthContext;

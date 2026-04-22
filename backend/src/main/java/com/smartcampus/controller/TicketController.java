@@ -30,7 +30,7 @@ public class TicketController {
     }
 
     @GetMapping("/{id}")
-    public Ticket getTicket(@PathVariable String id) {
+    public Ticket getTicket(@PathVariable Long id) {
         return ticketService.getTicketById(id);
     }
 
@@ -41,13 +41,13 @@ public class TicketController {
     }
 
     @PutMapping("/{id}")
-    public Ticket updateTicket(@PathVariable String id, @RequestBody Ticket ticket) {
+    public Ticket updateTicket(@PathVariable Long id, @RequestBody Ticket ticket) {
         return ticketService.updateTicket(id, ticket);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteTicket(@PathVariable String id) {
+    public void deleteTicket(@PathVariable Long id) {
         ticketService.deleteTicket(id);
     }
 }

@@ -30,7 +30,7 @@ public class BookingController {
     }
 
     @GetMapping("/{id}")
-    public Booking getBooking(@PathVariable String id) {
+    public Booking getBooking(@PathVariable Long id) {
         return bookingService.getBookingById(id);
     }
 
@@ -41,13 +41,13 @@ public class BookingController {
     }
 
     @PutMapping("/{id}")
-    public Booking updateBooking(@PathVariable String id, @RequestBody Booking booking) {
+    public Booking updateBooking(@PathVariable Long id, @RequestBody Booking booking) {
         return bookingService.updateBooking(id, booking);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteBooking(@PathVariable String id) {
+    public void deleteBooking(@PathVariable Long id) {
         bookingService.deleteBooking(id);
     }
 }

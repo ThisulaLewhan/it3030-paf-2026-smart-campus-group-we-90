@@ -2,7 +2,9 @@ package com.smartcampus.service;
 
 import com.smartcampus.dto.AuthResponseDto;
 import com.smartcampus.dto.LoginRequestDto;
+import com.smartcampus.dto.RegisterRequestDto;
 import com.smartcampus.dto.UserDto;
+import com.smartcampus.entity.Role;
 import com.smartcampus.entity.User;
 import com.smartcampus.repository.UserRepository;
 import com.smartcampus.security.JwtService;
@@ -10,7 +12,12 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.UUID;
+import java.util.Collections;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 @Service
 public class AuthService {
@@ -18,15 +25,53 @@ public class AuthService {
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final PasswordEncoder passwordEncoder;
 
     public AuthService(
             UserRepository userRepository,
             JwtService jwtService,
-            AuthenticationManager authenticationManager
+            AuthenticationManager authenticationManager,
+            PasswordEncoder passwordEncoder
     ) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    /**
+     * Registers a new user with hashed password, assigns the default USER role,
+     * then auto-generates a JWT so the user is instantly logged in after sign-up.
+     */
+    @Transactional
+    public AuthResponseDto register(RegisterRequestDto request) {
+        // Check if email is already taken
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("An account with this email already exists.");
+        }
+
+        // Create the new user entity with hashed password
+        User user = new User();
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(Role.USER);
+        user.setAuthProvider("local");
+        userRepository.save(user);
+
+        // Build response DTO
+        UserDto userDto = new UserDto(user.getId(), user.getName(), user.getEmail(), user.getRole());
+
+        // Generate JWT so the user is auto-logged-in immediately
+        UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
+                .username(user.getEmail())
+                .password("")
+                .authorities(Collections.emptyList())
+                .build();
+
+        String jwtToken = jwtService.generateToken(userDetails);
+
+        return new AuthResponseDto(jwtToken, userDto);
     }
 
     /**
@@ -80,5 +125,34 @@ public class AuthService {
         // Lookup the full entity so controllers can map it to relationships (like Notifications)
         return userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new IllegalArgumentException("Authenticated user magically vanished from database."));
+    }
+
+    /**
+     * Handles the business logic after a successful OAuth2 login.
+     * Finds the user by email or creates a new one, then issues a JWT.
+     */
+    @Transactional
+    public String processOAuthPostLogin(String email, String name) {
+        User user = userRepository.findByEmail(email).orElseGet(() -> {
+            User newUser = new User();
+            newUser.setEmail(email);
+            newUser.setName(name != null ? name : "Google User");
+            // Set a random dummy password since they log in via OAuth2
+            newUser.setPassword(UUID.randomUUID().toString());
+            newUser.setRole(com.smartcampus.entity.Role.USER);
+            newUser.setAuthProvider("google");
+            return userRepository.save(newUser);
+        });
+
+        // Generate JWT
+        SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + user.getRole().name());
+        
+        UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
+                .username(user.getEmail())
+                .password(user.getPassword())
+                .authorities(Collections.singletonList(authority))
+                .build();
+
+        return jwtService.generateToken(userDetails);
     }
 }

@@ -4,6 +4,8 @@
 @echo off
 
 set MAVEN_PROJECTBASEDIR=%~dp0
+@REM Strip trailing backslash for clean property passing
+if "%MAVEN_PROJECTBASEDIR:~-1%"=="\" set MAVEN_PROJECTBASEDIR=%MAVEN_PROJECTBASEDIR:~0,-1%
 
 @REM Find JAVA_HOME
 if not "%JAVA_HOME%"=="" goto javaHomeSet
@@ -22,8 +24,8 @@ echo Error: JAVA_HOME is set but java.exe not found at: %JAVA_EXE%
 exit /b 1
 
 :javaFound
-set WRAPPER_JAR=%MAVEN_PROJECTBASEDIR%.mvn\wrapper\maven-wrapper.jar
-set WRAPPER_PROPERTIES=%MAVEN_PROJECTBASEDIR%.mvn\wrapper\maven-wrapper.properties
+set WRAPPER_JAR=%~dp0.mvn\wrapper\maven-wrapper.jar
+set WRAPPER_PROPERTIES=%~dp0.mvn\wrapper\maven-wrapper.properties
 
 @REM Download maven-wrapper.jar if missing
 if exist "%WRAPPER_JAR%" goto wrapperReady
@@ -34,4 +36,4 @@ if not exist "%WRAPPER_JAR%" (
 )
 
 :wrapperReady
-"%JAVA_EXE%" -classpath "%WRAPPER_JAR%" org.apache.maven.wrapper.MavenWrapperMain %*
+"%JAVA_EXE%" -Dmaven.multiModuleProjectDirectory="%MAVEN_PROJECTBASEDIR%" -classpath "%WRAPPER_JAR%" org.apache.maven.wrapper.MavenWrapperMain %*

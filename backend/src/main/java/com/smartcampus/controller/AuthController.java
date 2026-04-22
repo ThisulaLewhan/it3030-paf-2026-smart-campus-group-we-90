@@ -2,6 +2,7 @@ package com.smartcampus.controller;
 
 import com.smartcampus.dto.AuthResponseDto;
 import com.smartcampus.dto.LoginRequestDto;
+import com.smartcampus.dto.RegisterRequestDto;
 import com.smartcampus.dto.UserDto;
 import com.smartcampus.entity.User;
 import com.smartcampus.service.AuthService;
@@ -25,6 +26,13 @@ public class AuthController {
 
     public AuthController(AuthService authService) {
         this.authService = authService;
+    }
+
+    // Register a new user account with name, email and password
+    @PostMapping("/register")
+    public ResponseEntity<AuthResponseDto> register(@Valid @RequestBody RegisterRequestDto request) {
+        AuthResponseDto response = authService.register(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/login")

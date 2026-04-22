@@ -81,12 +81,26 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  /**
+   * OAuth Login Wrapper
+   * Ingests the raw JWT from the URL callback
+   */
+  const oauthLogin = async (newToken) => {
+    // Stage 1: Store the raw token precisely so the Axios Interceptor picks it up
+    localStorage.setItem('token', newToken);
+    setToken(newToken);
+    
+    // Stage 2: Fire the standardized user refresh to pull our full profile
+    await loadCurrentUser();
+  };
+
   // Bundle exposing all assets to descendant nodes
   const value = {
     user,
     token,
     loading,
     login,
+    oauthLogin,
     logout,
     loadCurrentUser,
     isAuthenticated: !!token // Quick helper boolean evaluating the auth presence

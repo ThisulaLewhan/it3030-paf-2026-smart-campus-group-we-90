@@ -19,6 +19,21 @@ const authService = {
   },
 
   /**
+   * Hits the Spring Boot AuthController register endpoint.
+   * Creates a new account and automatically caches the JWT + user profile.
+   */
+  register: async (name, email, password) => {
+    const response = await api.post('/auth/register', { name, email, password });
+    
+    if (response.data && response.data.token) {
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+    }
+    
+    return response.data;
+  },
+
+  /**
    * Eradicates cached keys triggering instant frontend logout
    */
   logout: () => {

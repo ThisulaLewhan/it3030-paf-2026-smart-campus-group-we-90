@@ -19,7 +19,7 @@ public class TicketService {
         return ticketRepository.findAll();
     }
 
-    public Ticket getTicketById(String id) {
+    public Ticket getTicketById(Long id) {
         return ticketRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Ticket not found: " + id));
     }
@@ -31,7 +31,7 @@ public class TicketService {
         return ticketRepository.save(ticket);
     }
 
-    public Ticket updateTicket(String id, Ticket updatedTicket) {
+    public Ticket updateTicket(Long id, Ticket updatedTicket) {
         Ticket existingTicket = getTicketById(id);
         existingTicket.setTitle(updatedTicket.getTitle());
         existingTicket.setDescription(updatedTicket.getDescription());
@@ -42,7 +42,7 @@ public class TicketService {
         return ticketRepository.save(existingTicket);
     }
 
-    public void deleteTicket(String id) {
+    public void deleteTicket(Long id) {
         ticketRepository.deleteById(id);
     }
 }

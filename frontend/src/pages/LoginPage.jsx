@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import authService from '../services/authService';
 import './LoginPage.css';
 
@@ -34,7 +34,7 @@ const LoginPage = () => {
       await authService.login(email, password);
       
       // If Spring Boot returns a 200 OK + JWT, transition seamlessly into the app
-      navigate('/dashboard'); 
+      navigate('/'); 
       
     } catch (err) {
       // Actively intercept failures thrown by our backend's GlobalExceptionHandler
@@ -102,6 +102,24 @@ const LoginPage = () => {
             ) : 'Sign In'}
           </button>
         </form>
+
+        <div className="login-divider">
+          <span>OR</span>
+        </div>
+
+        <button 
+          type="button" 
+          className="google-login-button" 
+          onClick={() => window.location.href = 'http://localhost:8080/oauth2/authorization/google'}
+          disabled={loading}
+        >
+          <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google" className="google-logo" />
+          Sign in with Google
+        </button>
+
+        <p className="auth-switch-text">
+          Don't have an account? <Link to="/register" className="auth-switch-link">Create Account</Link>
+        </p>
       </div>
     </div>
   );

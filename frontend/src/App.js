@@ -1,22 +1,37 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import "./App.css";
 import { AuthProvider } from "./context/AuthContext";
 import MainLayout from "./layouts/MainLayout";
 import LoginPage from "./pages/Auth/LoginPage";
+import NewLoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import OAuth2RedirectHandler from "./pages/Auth/OAuth2RedirectHandler";
 import BookingsPage from "./pages/Bookings/BookingsPage";
 import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
 import NotificationsPage from "./pages/Notifications/NotificationsPage";
 import ResourcesPage from "./pages/Resources/ResourcesPage";
 import TicketsPage from "./pages/Tickets/TicketsPage";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
+          {/* Public login route (standalone page without sidebar) */}
+          <Route path="/login" element={<NewLoginPage />} />
+          
+          {/* Public registration route */}
+          <Route path="/register" element={<RegisterPage />} />
+          
+          {/* Invisible component strictly used as the OAuth Callback catch-basin */}
+          <Route path="/oauth2-redirect" element={<OAuth2RedirectHandler />} />
+
+          {/* Main layout with sidebar */}
           <Route path="/" element={<MainLayout />}>
             <Route index element={<Home />} />
+            <Route path="dashboard" element={<Home />} />
             <Route path="resources" element={<ResourcesPage />} />
             <Route path="bookings" element={<BookingsPage />} />
             <Route path="tickets" element={<TicketsPage />} />
@@ -31,3 +46,4 @@ function App() {
 }
 
 export default App;
+

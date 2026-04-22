@@ -1,6 +1,7 @@
 package com.smartcampus.config;
 
 import com.smartcampus.security.JwtFilter;
+import com.smartcampus.security.OAuth2LoginSuccessHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,9 +22,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
+    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
-    public SecurityConfig(JwtFilter jwtFilter) {
+    public SecurityConfig(JwtFilter jwtFilter, OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler) {
         this.jwtFilter = jwtFilter;
+        this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
     }
 
     @Bean
@@ -37,6 +40,12 @@ public class SecurityConfig {
                 // Allow public access to all authentication endpoints (login, register)
                 .requestMatchers("/api/auth/**").permitAll()
                 
+                // Allow OAuth2 login & callback URLs so the OAuth2 flow works without a JWT
+                .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
+                
+                // Allow H2 console access during development
+                .requestMatchers("/h2-console/**").permitAll()
+                
                 // Globally secure any route starting with /api/admin/** to strictly require the ADMIN role
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 
@@ -47,8 +56,16 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             
+            // Allow H2 console to render inside frames
+            .headers(headers -> headers.frameOptions(frame -> frame.disable()))
+            
             // Enforce stateless session management (no session ID cookies on the server)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            
+            // Register OAuth2 login with custom success handler to issue JWT
+            .oauth2Login(oauth2 -> oauth2
+                .successHandler(oAuth2LoginSuccessHandler)
+            )
             
             // Keep it ready for JWT: Insert our custom JWT filter BEFORE the standard Spring Security username/password filter
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

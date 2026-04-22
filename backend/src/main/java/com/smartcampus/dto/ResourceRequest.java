@@ -5,12 +5,14 @@ import com.smartcampus.entity.ResourceType;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.time.LocalTime;
 
 public class ResourceRequest {
 
     @NotBlank(message = "Name is required")
+    @Size(min = 2, max = 100, message = "Name must be between 2 and 100 characters")
     private String name;
 
     @NotNull(message = "Type is required")
@@ -21,6 +23,7 @@ public class ResourceRequest {
     private Integer capacity;
 
     @NotBlank(message = "Location is required")
+    @Size(min = 2, max = 200, message = "Location must be between 2 and 200 characters")
     private String location;
 
     private LocalTime availabilityStart;

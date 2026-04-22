@@ -14,6 +14,7 @@ import ResourcesPage from "./pages/Resources/ResourcesPage";
 import TicketsPage from "./pages/Tickets/TicketsPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AccountSecurityPage from "./pages/Security/AccountSecurityPage";
+import AdminUsersPage from "./pages/Admin/AdminUsersPage";
 
 import ProfilePage from "./pages/Profile/ProfilePage";
 
@@ -43,6 +44,14 @@ function App() {
               <Route path="tickets" element={<TicketsPage />} />
               <Route path="notifications" element={<NotificationsPage />} />
               <Route path="auth/login" element={<LoginPage />} />
+              <Route
+                path="admin/users"
+                element={
+                  <ProtectedRoute allowedRoles={["ADMIN"]}>
+                    <AdminUsersPage />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Route>

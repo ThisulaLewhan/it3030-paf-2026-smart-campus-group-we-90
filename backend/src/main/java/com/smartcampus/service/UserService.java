@@ -4,6 +4,7 @@ import com.smartcampus.dto.UpdateProfileRequestDto;
 import com.smartcampus.entity.Role;
 import com.smartcampus.entity.User;
 import com.smartcampus.repository.UserRepository;
+import java.util.List;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,6 +25,10 @@ public class UserService {
         
         user.setRole(newRole);
         return userRepository.save(user);
+    }
+
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
     }
 
     public User updateCurrentUserProfile(UpdateProfileRequestDto request) {

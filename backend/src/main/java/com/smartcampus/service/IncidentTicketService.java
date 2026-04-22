@@ -1,11 +1,14 @@
 package com.smartcampus.service;
 
+import com.smartcampus.dto.AssignDTO;
 import com.smartcampus.dto.IncidentTicketDTO;
 import com.smartcampus.dto.RejectDTO;
 import com.smartcampus.dto.StatusUpdateDTO;
 import com.smartcampus.entity.IncidentTicket;
 import com.smartcampus.entity.IncidentTicket.Status;
+import com.smartcampus.entity.User;
 import com.smartcampus.repository.IncidentTicketRepository;
+import com.smartcampus.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.EnumMap;
@@ -31,9 +34,12 @@ public class IncidentTicketService {
     }
 
     private final IncidentTicketRepository incidentTicketRepository;
+    private final UserRepository userRepository;
 
-    public IncidentTicketService(IncidentTicketRepository incidentTicketRepository) {
+    public IncidentTicketService(IncidentTicketRepository incidentTicketRepository,
+                                  UserRepository userRepository) {
         this.incidentTicketRepository = incidentTicketRepository;
+        this.userRepository = userRepository;
     }
 
     public IncidentTicket createTicket(IncidentTicketDTO dto, String createdBy) {
@@ -83,6 +89,17 @@ public class IncidentTicketService {
         if (dto.getResolutionNotes() != null) {
             ticket.setResolutionNotes(dto.getResolutionNotes());
         }
+        ticket.setUpdatedAt(LocalDateTime.now());
+        return incidentTicketRepository.save(ticket);
+    }
+
+    public IncidentTicket assignTechnician(String ticketId, AssignDTO dto) {
+        User technician = userRepository.findById(dto.getTechnicianId())
+                .orElseThrow(() -> new NoSuchElementException(
+                        "User not found: " + dto.getTechnicianId()));
+
+        IncidentTicket ticket = getTicketById(ticketId);
+        ticket.setAssignedTechnician(technician.getUsername());
         ticket.setUpdatedAt(LocalDateTime.now());
         return incidentTicketRepository.save(ticket);
     }

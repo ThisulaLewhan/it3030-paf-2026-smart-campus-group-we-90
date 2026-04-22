@@ -1,5 +1,6 @@
 package com.smartcampus.controller;
 
+import com.smartcampus.dto.AssignDTO;
 import com.smartcampus.dto.IncidentTicketDTO;
 import com.smartcampus.dto.RejectDTO;
 import com.smartcampus.dto.StatusUpdateDTO;
@@ -110,7 +111,8 @@ public class IncidentTicketController {
 
     /**
      * PATCH /api/incident-tickets/{id}/status
-     * Admin or technician updates the ticket status following the allowed workflow:
+     * Admin, any technician (ROLE_TECHNICIAN), or the specifically assigned technician
+     * can update the ticket status following the allowed workflow:
      *   OPEN → IN_PROGRESS → RESOLVED → CLOSED
      * Optional resolution notes can be included.
      * Returns 200 OK, 400 for invalid transition, 403 Forbidden, 404 Not Found.
@@ -124,11 +126,15 @@ public class IncidentTicketController {
         if (auth == null || !auth.isAuthenticated()) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        if (!isAdminOrTechnician(auth)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
 
         try {
+            IncidentTicket ticket = incidentTicketService.getTicketById(id);
+            boolean isAssignedTechnician = auth.getName().equals(ticket.getAssignedTechnician());
+
+            if (!isAdminOrTechnician(auth) && !isAssignedTechnician) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
             IncidentTicket updated = incidentTicketService.updateStatus(id, dto);
             return ResponseEntity.ok(updated);
         } catch (NoSuchElementException e) {
@@ -163,6 +169,33 @@ public class IncidentTicketController {
             return ResponseEntity.notFound().build();
         } catch (IllegalStateException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    /**
+     * PATCH /api/incident-tickets/{id}/assign
+     * Admin only. Assigns a technician (by userId) to a ticket.
+     * The assigned technician's username is stored on the ticket.
+     * Returns 200 OK, 403 if caller is not admin, 404 if ticket or user not found.
+     */
+    @PatchMapping("/{id}/assign")
+    public ResponseEntity<Object> assignTechnician(
+            @PathVariable String id,
+            @RequestBody AssignDTO dto,
+            Authentication auth) {
+
+        if (auth == null || !auth.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        if (!isAdmin(auth)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        try {
+            IncidentTicket updated = incidentTicketService.assignTechnician(id, dto);
+            return ResponseEntity.ok(updated);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 }

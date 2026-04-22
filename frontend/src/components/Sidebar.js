@@ -7,6 +7,7 @@ const moduleLinks = [
   // Universally visible to any logged-in student/user
   { to: "/profile", label: "My Profile" },
   { to: "/security", label: "Account Security" },
+  { to: "/notifications/preferences", label: "Notification Preferences" },
   { to: "/resources", label: "Resources" }, 
   { to: "/bookings", label: "Bookings" },
   { to: "/tickets", label: "Support Tickets" },

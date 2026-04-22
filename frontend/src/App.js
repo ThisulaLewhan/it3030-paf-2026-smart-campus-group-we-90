@@ -9,6 +9,7 @@ import OAuth2RedirectHandler from "./pages/Auth/OAuth2RedirectHandler";
 import BookingsPage from "./pages/Bookings/BookingsPage";
 import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
+import NotificationPreferencesPage from "./pages/Notifications/NotificationPreferencesPage";
 import NotificationsPage from "./pages/Notifications/NotificationsPage";
 import ResourcesPage from "./pages/Resources/ResourcesPage";
 import TicketsPage from "./pages/Tickets/TicketsPage";
@@ -44,6 +45,7 @@ function App() {
               <Route path="bookings" element={<BookingsPage />} />
               <Route path="tickets" element={<TicketsPage />} />
               <Route path="notifications" element={<NotificationsPage />} />
+              <Route path="notifications/preferences" element={<NotificationPreferencesPage />} />
               <Route path="unauthorized" element={<Unauthorized />} />
               <Route path="auth/login" element={<LoginPage />} />
               <Route

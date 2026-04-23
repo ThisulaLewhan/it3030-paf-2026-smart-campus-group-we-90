@@ -13,9 +13,9 @@ const NEXT_STATUS = {
 function TicketDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { user: currentUser } = useAuth();
   const role = currentUser?.role; // "ADMIN" | "TECHNICIAN" | "USER"
-  const username = currentUser?.username;
+  const userEmail = currentUser?.email;
 
   const [ticket, setTicket] = useState(null);
   const [attachments, setAttachments] = useState([]);
@@ -175,7 +175,7 @@ function TicketDetailPage() {
   // ── Helpers ───────────────────────────────────────────────────────────────
   const isAdmin = role === "ADMIN";
   const isTechnician = role === "TECHNICIAN";
-  const isAssignedTechnician = ticket?.assignedTechnician === username;
+  const isAssignedTechnician = ticket?.assignedTechnician === userEmail;
   const canAdvanceStatus =
     isAdmin || isTechnician || isAssignedTechnician;
   const nextStatus = ticket ? NEXT_STATUS[ticket.status] : null;
@@ -346,7 +346,7 @@ function TicketDetailPage() {
 
         <ul className="comment-list">
           {comments.map((c) => {
-            const isOwner = c.authorId === username;
+            const isOwner = c.authorId === userEmail;
             const canDelete = isOwner || isAdmin;
             return (
               <li key={c.id} className="comment-item">

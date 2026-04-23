@@ -94,12 +94,8 @@ public class BookingService {
     public Booking cancelBooking(Long id) {
         Booking booking = getBookingById(id);
 
-        if (booking.getStatus() == BookingStatus.CANCELLED) {
-            throw new IllegalStateException("Booking is already cancelled.");
-        }
-        
-        if (booking.getStatus() == BookingStatus.REJECTED) {
-            throw new IllegalStateException("Cannot cancel a rejected booking.");
+        if (booking.getStatus() != BookingStatus.APPROVED) {
+            throw new IllegalStateException("Only APPROVED bookings can be cancelled.");
         }
 
         booking.setStatus(BookingStatus.CANCELLED);

@@ -343,7 +343,7 @@ function BookingsPage() {
                 </div>
                 <div className="bk-form-group">
                   <label>Expected Attendees</label>
-                  <input type="number" name="expectedAttendees" value={formData.expectedAttendees} onChange={handleInputChange} min="1" placeholder="e.g. 50" />
+                  <input type="number" name="expectedAttendees" value={formData.expectedAttendees} onChange={handleInputChange} min="1" placeholder="e.g. 50" required />
                 </div>
                 <button type="submit" className="bk-submit-btn" disabled={isSubmitting}>
                   <CalendarIcon />
@@ -439,8 +439,8 @@ function BookingsPage() {
                       <td>
                         <div style={{ marginBottom: '0.2rem' }}>{booking.purpose}</div>
                         {booking.expectedAttendees && (
-                          <div style={{ fontSize: '0.78rem', color: 'var(--color-slate-400)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                            <UsersIcon /> {booking.expectedAttendees}
+                          <div style={{ fontSize: '0.78rem', color: 'var(--color-slate-400)' }}>
+                            {booking.expectedAttendees} attendees
                           </div>
                         )}
                       </td>

@@ -1,18 +1,13 @@
 package com.smartcampus.controller;
 
+import com.smartcampus.dto.BookingRequestDTO;
 import com.smartcampus.entity.Booking;
 import com.smartcampus.service.BookingService;
-import java.util.List;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/bookings")
@@ -30,24 +25,24 @@ public class BookingController {
     }
 
     @GetMapping("/{id}")
-    public Booking getBooking(@PathVariable String id) {
+    public Booking getBooking(@PathVariable Long id) {
         return bookingService.getBookingById(id);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Booking createBooking(@RequestBody Booking booking) {
-        return bookingService.createBooking(booking);
+    public Booking createBooking(@Valid @RequestBody BookingRequestDTO requestDTO) {
+        return bookingService.createBooking(requestDTO);
     }
 
     @PutMapping("/{id}")
-    public Booking updateBooking(@PathVariable String id, @RequestBody Booking booking) {
-        return bookingService.updateBooking(id, booking);
+    public Booking updateBooking(@PathVariable Long id, @Valid @RequestBody BookingRequestDTO requestDTO) {
+        return bookingService.updateBooking(id, requestDTO);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteBooking(@PathVariable String id) {
+    public void deleteBooking(@PathVariable Long id) {
         bookingService.deleteBooking(id);
     }
 }

@@ -1,10 +1,12 @@
 package com.smartcampus.service;
 
+import com.smartcampus.dto.BookingRequestDTO;
 import com.smartcampus.entity.Booking;
+import com.smartcampus.entity.BookingStatus;
 import com.smartcampus.repository.BookingRepository;
-import java.time.LocalDateTime;
-import java.util.List;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class BookingService {
@@ -19,31 +21,41 @@ public class BookingService {
         return bookingRepository.findAll();
     }
 
-    public Booking getBookingById(String id) {
+    public Booking getBookingById(Long id) {
         return bookingRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Booking not found: " + id));
     }
 
-    public Booking createBooking(Booking booking) {
-        LocalDateTime now = LocalDateTime.now();
-        booking.setCreatedAt(now);
-        booking.setUpdatedAt(now);
+    public Booking createBooking(BookingRequestDTO requestDTO) {
+        Booking booking = new Booking();
+        booking.setResourceId(requestDTO.getResourceId());
+        booking.setUserId(requestDTO.getUserId());
+        booking.setDate(requestDTO.getDate());
+        booking.setStartTime(requestDTO.getStartTime());
+        booking.setEndTime(requestDTO.getEndTime());
+        booking.setPurpose(requestDTO.getPurpose());
+        booking.setAttendees(requestDTO.getAttendees());
+        
+        // Set status to PENDING
+        booking.setStatus(BookingStatus.PENDING);
+        
         return bookingRepository.save(booking);
     }
 
-    public Booking updateBooking(String id, Booking updatedBooking) {
+    public Booking updateBooking(Long id, BookingRequestDTO updatedBooking) {
         Booking existingBooking = getBookingById(id);
         existingBooking.setResourceId(updatedBooking.getResourceId());
-        existingBooking.setBookedBy(updatedBooking.getBookedBy());
+        existingBooking.setUserId(updatedBooking.getUserId());
+        existingBooking.setDate(updatedBooking.getDate());
         existingBooking.setStartTime(updatedBooking.getStartTime());
         existingBooking.setEndTime(updatedBooking.getEndTime());
-        existingBooking.setStatus(updatedBooking.getStatus());
         existingBooking.setPurpose(updatedBooking.getPurpose());
-        existingBooking.setUpdatedAt(LocalDateTime.now());
+        existingBooking.setAttendees(updatedBooking.getAttendees());
+        
         return bookingRepository.save(existingBooking);
     }
 
-    public void deleteBooking(String id) {
+    public void deleteBooking(Long id) {
         bookingRepository.deleteById(id);
     }
 }

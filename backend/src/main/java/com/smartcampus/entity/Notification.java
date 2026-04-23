@@ -9,13 +9,22 @@ public class Notification {
 
     @Id
     private String id;
-    private String title;
+    private String userId;
     private String message;
-    private String audience;
-    private String channel;
-    private boolean read;
+    private NotificationType type;
+    private boolean isRead = false;
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+
+    public Notification() {
+    }
+
+    public Notification(User user, String message, NotificationType type) {
+        this.userId = user.getId();
+        this.message = message;
+        this.type = type;
+        this.isRead = false;
+        this.createdAt = LocalDateTime.now();
+    }
 
     public String getId() {
         return id;
@@ -25,12 +34,12 @@ public class Notification {
         this.id = id;
     }
 
-    public String getTitle() {
-        return title;
+    public String getUserId() {
+        return userId;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public String getMessage() {
@@ -41,28 +50,20 @@ public class Notification {
         this.message = message;
     }
 
-    public String getAudience() {
-        return audience;
+    public NotificationType getType() {
+        return type;
     }
 
-    public void setAudience(String audience) {
-        this.audience = audience;
-    }
-
-    public String getChannel() {
-        return channel;
-    }
-
-    public void setChannel(String channel) {
-        this.channel = channel;
+    public void setType(NotificationType type) {
+        this.type = type;
     }
 
     public boolean isRead() {
-        return read;
+        return isRead;
     }
 
     public void setRead(boolean read) {
-        this.read = read;
+        this.isRead = read;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -71,13 +72,5 @@ public class Notification {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
     }
 }

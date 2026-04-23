@@ -13,6 +13,7 @@ public class Booking {
     private String bookedBy;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
+
     private String status;
     private String purpose;
     private LocalDateTime createdAt;

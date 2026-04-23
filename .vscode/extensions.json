@@ -1,0 +1,21 @@
+{
+  "recommendations": [
+    // Java + Spring Boot
+    "vscjava.vscode-java-pack",
+    "vmware.vscode-spring-boot",
+    "vscjava.vscode-spring-initializr",
+    "vscjava.vscode-spring-boot-dashboard",
+
+    // React / Frontend
+    "dsznajder.es7-react-js-snippets",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+
+    // General Dev Tools
+    "humao.rest-client",
+    "rangav.vscode-thunder-client",
+    "formulahendry.auto-rename-tag",
+    "bradlc.vscode-tailwindcss",
+    "ms-vscode.vscode-json"
+  ]
+}

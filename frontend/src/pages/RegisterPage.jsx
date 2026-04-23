@@ -1,0 +1,227 @@
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import './LoginPage.css';
+
+const RegisterPage = () => {
+  const navigate = useNavigate();
+  const { register } = useAuth();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (!name || !email || !password || !confirmPassword) {
+      setError('Please fill in all fields.');
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters.');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await register(name, email, password);
+      navigate('/dashboard', { replace: true });
+    } catch (err) {
+      if (err.response && err.response.data) {
+        const serverError = err.response.data.message || err.response.data.error || err.response.data;
+        setError(typeof serverError === 'string' ? serverError : 'Registration failed. Please try again.');
+      } else {
+        setError('Network unavailable. Ensure your Spring Boot backend is actively running!');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="login-container register-page">
+      <div className="auth-shell">
+        <div className="login-card">
+          <Link to="/" className="login-back-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
+            </svg>
+            Back to Home
+          </Link>
+
+
+          <h2 className="login-title">Create Account</h2>
+          <p className="login-subtitle">
+            Set up your account to get started.
+          </p>
+
+          {error && <div className="login-error">{error}</div>}
+
+          <form onSubmit={handleSubmit}>
+            <div className="login-form-group">
+              <label className="login-label" htmlFor="reg-name">Full Name</label>
+              <input
+                id="reg-name"
+                type="text"
+                className="login-input"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="John Doe"
+                disabled={loading}
+                required
+                autoComplete="name"
+              />
+            </div>
+
+            <div className="login-form-group">
+              <label className="login-label" htmlFor="reg-email">Email</label>
+              <input
+                id="reg-email"
+                type="email"
+                className="login-input"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@smartcampus.edu"
+                disabled={loading}
+                required
+                autoComplete="email"
+              />
+            </div>
+
+            <div className="login-form-group">
+              <div className="login-label-row">
+                <label className="login-label" htmlFor="reg-password">Password</label>
+              </div>
+              <div className="password-input-wrap">
+                <input
+                  id="reg-password"
+                  type={showPassword ? 'text' : 'password'}
+                  className="login-input password-input"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Create a secure password"
+                  disabled={loading}
+                  required
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowPassword((current) => !current)}
+                  disabled={loading}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  aria-pressed={showPassword}
+                >
+                  {showPassword ? (
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  ) : (
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z" />
+                      <path d="M5 19l14-14" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+              <p className="login-helper-text">Use at least 6 characters for your password.</p>
+            </div>
+
+            <div className="login-form-group">
+              <div className="login-label-row">
+                <label className="login-label" htmlFor="reg-confirm">Confirm Password</label>
+              </div>
+              <div className="password-input-wrap">
+                <input
+                  id="reg-confirm"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  className="login-input password-input"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Re-enter your password"
+                  disabled={loading}
+                  required
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowConfirmPassword((current) => !current)}
+                  disabled={loading}
+                  aria-label={showConfirmPassword ? 'Hide password confirmation' : 'Show password confirmation'}
+                  aria-pressed={showConfirmPassword}
+                >
+                  {showConfirmPassword ? (
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  ) : (
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z" />
+                      <path d="M5 19l14-14" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className="login-button"
+              disabled={loading}
+            >
+              {loading ? (
+                <span className="button-spinner-wrap">
+                  <span className="button-spinner"></span> Creating Account...
+                </span>
+              ) : 'Create Account'}
+            </button>
+          </form>
+
+          <div className="login-divider">
+            <span>OR</span>
+          </div>
+
+          <button
+            type="button"
+            className="google-login-button"
+            onClick={() => window.location.href = 'http://localhost:8080/oauth2/authorization/google'}
+            disabled={loading}
+          >
+            <svg className="google-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="18" height="18" aria-hidden="true">
+              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+            </svg>
+            Continue with Google
+          </button>
+
+          <p className="auth-switch-text">
+            Already have an account? <Link to="/login" className="auth-switch-link">Sign In</Link>
+          </p>
+          <p className="auth-footer-note">
+            Your profile is created instantly after successful registration.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default RegisterPage;

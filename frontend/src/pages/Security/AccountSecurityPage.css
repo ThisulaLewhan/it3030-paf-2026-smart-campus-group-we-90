@@ -1,0 +1,228 @@
+.security-page {
+  max-width: 960px;
+  margin: 0 auto;
+  display: grid;
+  gap: 1.5rem;
+  animation: fadeIn 0.5s var(--ease-out) both;
+}
+
+.security-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 2rem 2.25rem;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(135deg, var(--color-slate-50) 0%, var(--color-white) 50%, #eff6ff 100%);
+  border: 1px solid var(--color-primary-surface);
+  position: relative;
+  overflow: hidden;
+}
+
+.security-hero::before {
+  content: "";
+  position: absolute;
+  top: -30%;
+  right: -5%;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.05);
+  pointer-events: none;
+}
+
+.security-eyebrow {
+  margin: 0 0 0.4rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.security-hero h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  color: var(--color-slate-900);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.security-subtitle {
+  margin: 0.5rem 0 0;
+  color: var(--color-slate-600);
+  font-size: 0.92rem;
+  max-width: 560px;
+  line-height: 1.6;
+}
+
+.security-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: 2rem;
+  border: 1px solid var(--color-slate-200);
+  box-shadow: var(--shadow-xs);
+}
+
+.security-card-header {
+  margin-bottom: 1.5rem;
+}
+
+.security-card-header h2 {
+  margin: 0 0 0.3rem;
+  font-size: 1.15rem;
+  color: var(--color-slate-900);
+  font-weight: 700;
+}
+
+.security-card-header p {
+  margin: 0;
+  color: var(--color-slate-500);
+  font-size: 0.92rem;
+}
+
+.security-grid,
+.security-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+}
+
+.security-item label,
+.security-field label {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--color-slate-500);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  margin-bottom: 0.45rem;
+}
+
+.security-item-value,
+.security-field input {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 48px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-slate-200);
+  background: var(--color-slate-50);
+  color: var(--color-slate-700);
+  font-size: 0.95rem;
+  font-family: var(--font-sans);
+}
+
+.security-field input {
+  background: var(--color-white);
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.security-field input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.security-field-full {
+  grid-column: 1 / -1;
+}
+
+.input-error {
+  border-color: #f87171 !important;
+}
+
+.field-error {
+  margin: 0.4rem 0 0;
+  color: var(--color-error);
+  font-size: 0.85rem;
+}
+
+.security-form {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.security-status {
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md);
+  background: #eff6ff;
+  color: var(--color-primary-deeper);
+  border: 1px solid #bfdbfe;
+  font-weight: 500;
+  font-size: 0.92rem;
+}
+
+.security-status-error {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  border-color: var(--color-error-border);
+}
+
+.security-status-success {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  border-color: var(--color-success-border);
+}
+
+.security-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.security-primary-button,
+.security-logout-button {
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: var(--color-white);
+  padding: 0.7rem 1.1rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  font-family: var(--font-sans);
+}
+
+.security-primary-button {
+  background: var(--color-primary);
+}
+
+.security-logout-button {
+  background: var(--color-slate-900);
+}
+
+.security-primary-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.2);
+}
+
+.security-logout-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.15);
+}
+
+.security-primary-button:disabled,
+.security-field input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .security-hero,
+  .security-card {
+    padding: 1.25rem;
+  }
+
+  .security-hero {
+    flex-direction: column;
+  }
+
+  .security-actions {
+    justify-content: stretch;
+  }
+
+  .security-primary-button,
+  .security-logout-button {
+    width: 100%;
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    // ─── Debug Spring Boot Backend ─────────────────────────────────────────────
+    {
+      "type": "java",
+      "name": "Debug Backend (Spring Boot)",
+      "request": "launch",
+      "mainClass": "com.smartcampus.SmartCampusApplication",
+      "projectName": "smart-campus-backend",
+      "cwd": "${workspaceFolder}/backend",
+      "env": {
+        "SPRING_PROFILES_ACTIVE": "dev"
+      }
+    },
+
+    // ─── Attach to running backend ─────────────────────────────────────────────
+    {
+      "type": "java",
+      "name": "Attach to Backend (port 5005)",
+      "request": "attach",
+      "hostName": "localhost",
+      "port": 5005
+    }
+  ],
+
+  "compounds": [
+    // ─── Launch Full Stack ─────────────────────────────────────────────────────
+    {
+      "name": "Full Stack: Frontend + Backend",
+      "configurations": ["Debug Backend (Spring Boot)"],
+      "preLaunchTask": "Start Frontend",
+      "stopAll": true
+    }
+  ]
+}

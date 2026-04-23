@@ -1,8 +1,18 @@
+import { Link } from "react-router-dom";
+
 function NotFound() {
   return (
-    <section className="page-card">
-      <h1>Page not found</h1>
-      <p>The route you requested does not exist in the Smart Campus app.</p>
+    <section className="notfound-page">
+      <div className="notfound-card">
+        <p className="notfound-eyebrow">404</p>
+        <h1>We couldn’t find that page.</h1>
+        <p className="notfound-copy">
+          The page you requested does not exist or may have been moved. You can head back to the dashboard and continue from there.
+        </p>
+        <Link to="/dashboard" className="notfound-button">
+          Return to Dashboard
+        </Link>
+      </div>
     </section>
   );
 }

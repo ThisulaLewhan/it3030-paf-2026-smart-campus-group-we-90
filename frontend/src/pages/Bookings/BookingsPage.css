@@ -204,6 +204,12 @@
   cursor: not-allowed;
 }
 
+.bk-submit-btn svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
 /* ── Error Banner ── */
 .bk-error-banner {
   padding: 0.85rem 1rem;

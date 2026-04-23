@@ -30,6 +30,12 @@ public class GlobalExceptionHandler {
         return buildError(HttpStatus.BAD_REQUEST, "Bad Request", ex.getMessage());
     }
 
+    // Handles state conflicts (e.g., booking time overlaps, invalid state transitions)
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ErrorResponseDto> handleConflict(IllegalStateException ex) {
+        return buildError(HttpStatus.CONFLICT, "Conflict", ex.getMessage());
+    }
+
     // Native Spring Security hook for busted Logins/JWTs (Maps to 401)
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ErrorResponseDto> handleUnauthorized(AuthenticationException ex) {

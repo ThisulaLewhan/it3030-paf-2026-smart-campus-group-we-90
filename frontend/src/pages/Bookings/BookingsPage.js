@@ -86,6 +86,12 @@ function BookingsPage() {
     purpose: '',
   });
 
+  const [adminFilters, setAdminFilters] = useState({
+    resourceId: '',
+    status: '',
+    date: ''
+  });
+
   // ── Calendar state ──
   const [calDate, setCalDate] = useState(new Date());
 
@@ -93,8 +99,15 @@ function BookingsPage() {
   const fetchBookings = async () => {
     setLoading(true);
     try {
+      let params = {};
+      if (isAdmin) {
+        if (adminFilters.resourceId) params.resourceId = adminFilters.resourceId;
+        if (adminFilters.status) params.status = adminFilters.status;
+        if (adminFilters.date) params.date = adminFilters.date;
+      }
+      
       const res = isAdmin
-        ? await bookingService.getAdminBookings()
+        ? await bookingService.getAdminBookings(params)
         : await bookingService.getMyBookings();
       setBookings(res.data || res || []);
     } catch (err) {
@@ -332,6 +345,41 @@ function BookingsPage() {
             <div className="bk-section-header">
               <h2>{isAdmin ? 'All Bookings' : 'My Bookings'}</h2>
             </div>
+
+            {isAdmin && (
+              <form className="bk-admin-filters" onSubmit={(e) => { e.preventDefault(); fetchBookings(); }}>
+                <input 
+                  type="text" 
+                  name="resourceId" 
+                  placeholder="Filter by Resource ID (e.g. LH-101)" 
+                  value={adminFilters.resourceId} 
+                  onChange={(e) => setAdminFilters({ ...adminFilters, resourceId: e.target.value })} 
+                />
+                <select 
+                  name="status" 
+                  value={adminFilters.status} 
+                  onChange={(e) => setAdminFilters({ ...adminFilters, status: e.target.value })}
+                >
+                  <option value="">All Statuses</option>
+                  <option value="PENDING">Pending</option>
+                  <option value="APPROVED">Approved</option>
+                  <option value="REJECTED">Rejected</option>
+                  <option value="CANCELLED">Cancelled</option>
+                </select>
+                <input 
+                  type="date" 
+                  name="date" 
+                  value={adminFilters.date} 
+                  onChange={(e) => setAdminFilters({ ...adminFilters, date: e.target.value })} 
+                />
+                <button type="submit" className="bk-action-btn approve" style={{ margin: 0 }}>Apply Filters</button>
+                <button type="button" onClick={() => {
+                  setAdminFilters({ resourceId: '', status: '', date: '' });
+                  setTimeout(() => fetchBookings(), 100); // short delay to ensure state clears
+                }} className="bk-action-btn cancel" style={{ margin: 0 }}>Clear</button>
+              </form>
+            )}
+
             {loading ? (
               <p style={{ color: 'var(--color-slate-400)', padding: '1rem 0' }}>Loading bookings...</p>
             ) : bookings.length === 0 ? (

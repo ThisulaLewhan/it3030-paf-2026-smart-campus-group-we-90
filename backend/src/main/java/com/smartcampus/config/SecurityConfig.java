@@ -42,7 +42,7 @@ public class SecurityConfig {
         // Allow the React frontend origin
         configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
         // Allow standard HTTP methods + OPTIONS for preflight
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         // Explicitly allow Authorization header
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
         // Allow credentials (necessary if cookies/auth headers are involved in cross-origin)

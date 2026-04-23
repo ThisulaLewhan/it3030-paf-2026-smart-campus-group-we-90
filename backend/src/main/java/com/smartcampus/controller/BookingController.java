@@ -71,11 +71,13 @@ public class BookingController {
     }
 
     @PatchMapping("/{id}/approve")
+    @PreAuthorize("hasRole('ADMIN')")
     public Booking approveBooking(@PathVariable String id) {
         return bookingService.approveBooking(id);
     }
 
     @PatchMapping("/{id}/reject")
+    @PreAuthorize("hasRole('ADMIN')")
     public Booking rejectBooking(@PathVariable String id, @RequestBody Map<String, String> payload) {
         String reason = payload.get("reason");
         return bookingService.rejectBooking(id, reason);

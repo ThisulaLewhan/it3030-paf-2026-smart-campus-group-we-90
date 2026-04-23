@@ -71,7 +71,7 @@ public class BookingService {
             if (excludeBookingId != null && excludeBookingId.equals(existing.getId())) {
                 continue;
             }
-            if (existing.getStatus() == BookingStatus.CANCELLED || existing.getStatus() == BookingStatus.REJECTED) {
+            if (existing.getStatus() != BookingStatus.APPROVED) {
                 continue;
             }
             if (startTime.isBefore(existing.getEndTime()) && endTime.isAfter(existing.getStartTime())) {

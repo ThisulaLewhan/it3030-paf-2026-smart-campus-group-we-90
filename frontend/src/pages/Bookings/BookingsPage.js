@@ -456,10 +456,10 @@ function BookingsPage() {
                       </td>
                       <td>
                         {isAdmin && booking.status === 'PENDING' && (
-                          <>
-                            <button onClick={() => handleApprove(booking.id)} className="bk-action-btn approve">Approve</button>
-                            <button onClick={() => handleReject(booking.id)} className="bk-action-btn reject">Reject</button>
-                          </>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', width: 'fit-content' }}>
+                            <button onClick={() => handleApprove(booking.id)} className="bk-action-btn approve" style={{ margin: 0 }}>Approve</button>
+                            <button onClick={() => handleReject(booking.id)} className="bk-action-btn reject" style={{ margin: 0 }}>Reject</button>
+                          </div>
                         )}
                         {!isAdmin && booking.status === 'APPROVED' && (
                           <button onClick={() => handleCancel(booking.id)} className="bk-action-btn cancel">Cancel</button>

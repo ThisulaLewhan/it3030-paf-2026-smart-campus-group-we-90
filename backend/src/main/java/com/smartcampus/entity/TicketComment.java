@@ -12,6 +12,7 @@ public class TicketComment {
     private String ticketId;
     private String content;
     private String authorId;
+    private String authorRole;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -45,6 +46,14 @@ public class TicketComment {
 
     public void setAuthorId(String authorId) {
         this.authorId = authorId;
+    }
+
+    public String getAuthorRole() {
+        return authorRole;
+    }
+
+    public void setAuthorRole(String authorRole) {
+        this.authorRole = authorRole;
     }
 
     public LocalDateTime getCreatedAt() {

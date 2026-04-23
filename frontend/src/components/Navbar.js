@@ -6,7 +6,6 @@ function Navbar() {
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
   const displayName = user?.name || "Campus User";
-  const firstName = displayName.split(" ")[0];
   const initials = displayName
     .split(" ")
     .filter(Boolean)

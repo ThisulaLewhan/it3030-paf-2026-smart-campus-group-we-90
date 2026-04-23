@@ -40,6 +40,9 @@ public class Booking {
     @Column(nullable = false)
     private BookingStatus status;
 
+    @Column(length = 500)
+    private String rejectionReason;
+
     public Long getId() {
         return id;
     }
@@ -110,5 +113,13 @@ public class Booking {
 
     public void setStatus(BookingStatus status) {
         this.status = status;
+    }
+
+    public String getRejectionReason() {
+        return rejectionReason;
+    }
+
+    public void setRejectionReason(String rejectionReason) {
+        this.rejectionReason = rejectionReason;
     }
 }

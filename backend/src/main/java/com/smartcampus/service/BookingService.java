@@ -75,6 +75,22 @@ public class BookingService {
         return bookingRepository.save(booking);
     }
 
+    public Booking rejectBooking(Long id, String reason) {
+        Booking booking = getBookingById(id);
+
+        if (booking.getStatus() != BookingStatus.PENDING) {
+            throw new IllegalStateException("Only PENDING bookings can be rejected.");
+        }
+
+        if (reason == null || reason.trim().isEmpty()) {
+            throw new IllegalArgumentException("A rejection reason must be provided.");
+        }
+
+        booking.setStatus(BookingStatus.REJECTED);
+        booking.setRejectionReason(reason);
+        return bookingRepository.save(booking);
+    }
+
     public void deleteBooking(Long id) {
         bookingRepository.deleteById(id);
     }

@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/bookings")
@@ -49,5 +50,11 @@ public class BookingController {
     @PatchMapping("/{id}/approve")
     public Booking approveBooking(@PathVariable Long id) {
         return bookingService.approveBooking(id);
+    }
+
+    @PatchMapping("/{id}/reject")
+    public Booking rejectBooking(@PathVariable Long id, @RequestBody Map<String, String> payload) {
+        String reason = payload.get("reason");
+        return bookingService.rejectBooking(id, reason);
     }
 }

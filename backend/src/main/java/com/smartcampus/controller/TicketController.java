@@ -1,6 +1,7 @@
 package com.smartcampus.controller;
 
 import com.smartcampus.dto.CommentDTO;
+import com.smartcampus.dto.TicketCreateDTO;
 import com.smartcampus.dto.TicketStatusUpdateDTO;
 import com.smartcampus.entity.Ticket;
 import com.smartcampus.entity.TicketComment;
@@ -46,8 +47,13 @@ public class TicketController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Ticket createTicket(@RequestBody Ticket ticket) {
-        return ticketService.createTicket(ticket);
+    public Ticket createTicket(@RequestBody TicketCreateDTO dto, Authentication auth) {
+        String requesterRole = auth.getAuthorities().stream()
+                .map(a -> a.getAuthority())
+                .findFirst()
+                .orElse("ROLE_USER");
+
+        return ticketService.createTicket(dto, auth.getName(), requesterRole);
     }
 
     @PutMapping("/{id}")

@@ -11,10 +11,16 @@ public class Ticket {
     private String id;
 
     private String title;
+    private String category;
     private String description;
     private String priority;
     private String status;
+    private String resourceId;
+    private String location;
+    private String preferredContact;
+    private String createdBy;
     private String assignedTo;
+    private String assignedTechnician;
     private String resolutionNotes;
     private String rejectionReason;
     private LocalDateTime createdAt;
@@ -34,6 +40,54 @@ public class Ticket {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public String getResourceId() {
+        return resourceId;
+    }
+
+    public void setResourceId(String resourceId) {
+        this.resourceId = resourceId;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public String getPreferredContact() {
+        return preferredContact;
+    }
+
+    public void setPreferredContact(String preferredContact) {
+        this.preferredContact = preferredContact;
+    }
+
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public String getAssignedTechnician() {
+        return assignedTechnician;
+    }
+
+    public void setAssignedTechnician(String assignedTechnician) {
+        this.assignedTechnician = assignedTechnician;
     }
 
     public String getDescription() {

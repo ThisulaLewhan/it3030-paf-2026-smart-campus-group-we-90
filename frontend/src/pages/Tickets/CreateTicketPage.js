@@ -1,6 +1,8 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import ticketService from "../../services/ticketService";
+import userService from "../../services/userService";
 import "./Tickets.css";
 
 const CATEGORIES = [
@@ -29,13 +31,35 @@ const EMPTY_FORM = {
 
 function CreateTicketPage() {
   const navigate = useNavigate();
+  const { user: currentUser } = useAuth();
+  const isAdmin = currentUser?.role === "ADMIN";
   const fileInputRef = useRef(null);
 
   const [form, setForm] = useState(EMPTY_FORM);
+  const [assignedTechnicianId, setAssignedTechnicianId] = useState("");
+  const [technicians, setTechnicians] = useState([]);
+  const [techLoading, setTechLoading] = useState(false);
+  const [techError, setTechError] = useState(null);
   const [images, setImages] = useState([]); // [{ file, preview }]
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [apiError, setApiError] = useState(null);
+
+  // Fetch technicians whenever the current user changes (fixes stale-auth / hard-refresh issue)
+  useEffect(() => {
+    if (currentUser?.role !== "ADMIN") return;
+    setTechLoading(true);
+    setTechError(null);
+    userService
+      .getAllUsers()
+      .then((res) => {
+        // Backend Role enum only has USER and ADMIN — show all non-USER accounts
+        const eligible = res.data.filter((u) => u.role !== "USER");
+        setTechnicians(eligible);
+      })
+      .catch(() => setTechError("Could not load technicians"))
+      .finally(() => setTechLoading(false));
+  }, [currentUser]); // depend on currentUser object, not derived boolean
 
   // ── Field change ─────────────────────────────────────────────────────────
   function handleChange(e) {
@@ -124,6 +148,7 @@ function CreateTicketPage() {
         resourceId: form.resourceId.trim() || undefined,
         location: form.location.trim() || undefined,
         preferredContact: form.preferredContact.trim() || undefined,
+        assignedTechnicianId: assignedTechnicianId || null,
       };
       const res = await ticketService.create(payload);
       const ticketId = res.data.id;
@@ -274,6 +299,33 @@ function CreateTicketPage() {
             onChange={handleChange}
           />
         </div>
+
+        {/* Assign Technician — ADMIN only */}
+        {isAdmin && (
+          <div className="form-group">
+            <label htmlFor="assignedTechnicianId">
+              Assign Technician{" "}
+              <span className="hint">(optional)</span>
+            </label>
+            {techLoading ? (
+              <p className="hint">Loading technicians…</p>
+            ) : (
+              <select
+                id="assignedTechnicianId"
+                value={assignedTechnicianId}
+                onChange={(e) => setAssignedTechnicianId(e.target.value)}
+              >
+                <option value="">Select a technician… (optional)</option>
+                {technicians.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name} – {t.email}
+                  </option>
+                ))}
+              </select>
+            )}
+            {techError && <span className="field-error">{techError}</span>}
+          </div>
+        )}
 
         {/* Image upload */}
         <div className="form-group">

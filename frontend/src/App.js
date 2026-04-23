@@ -18,20 +18,19 @@ import AccountSecurityPage from "./pages/Security/AccountSecurityPage";
 import AdminUsersPage from "./pages/Admin/AdminUsersPage";
 import Unauthorized from "./pages/Unauthorized";
 import ProfilePage from "./pages/Profile/ProfilePage";
+import PublicLayout from "./layouts/PublicLayout";
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Public landing page at root */}
-          <Route path="/" element={<LandingPage />} />
-
-          {/* Public login route (standalone page without sidebar) */}
-          <Route path="/login" element={<NewLoginPage />} />
-          
-          {/* Public registration route */}
-          <Route path="/register" element={<RegisterPage />} />
+          {/* Public layout for all unauthenticated pages */}
+          <Route element={<PublicLayout />}>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<NewLoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+          </Route>
           
           {/* Invisible component strictly used as the OAuth Callback catch-basin */}
           <Route path="/oauth2-redirect" element={<OAuth2RedirectHandler />} />

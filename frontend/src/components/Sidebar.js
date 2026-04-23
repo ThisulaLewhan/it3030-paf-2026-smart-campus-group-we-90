@@ -3,6 +3,11 @@ import { useAuth } from "../context/AuthContext";
 
 // SVG icon components for sidebar menu items
 const icons = {
+  dashboard: (
+    <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
+    </svg>
+  ),
   profile: (
     <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" />
@@ -56,6 +61,7 @@ const icons = {
 // By adding the 'allowedRoles' array prop, we dynamically secure elements from the DOM without writing dozens of messy if-else checks
 const moduleLinks = [
   // General section
+  { to: "/dashboard", label: "Dashboard", icon: "dashboard", section: "General" },
   { to: "/profile", label: "My Profile", icon: "profile", section: "General" },
   { to: "/security", label: "Account Security", icon: "security", section: "General" },
   { to: "/notifications/preferences", label: "Notifications", icon: "notifications", section: "General" },

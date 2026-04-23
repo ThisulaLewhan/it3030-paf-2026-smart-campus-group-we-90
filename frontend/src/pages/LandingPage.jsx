@@ -66,26 +66,6 @@ function LandingPage() {
 
   return (
     <div className="landing-page">
-      {/* Navbar */}
-      <header className="landing-nav">
-        <div className="landing-nav-inner">
-          <div className="landing-nav-brand">
-            <span className="landing-nav-logo">SC</span>
-            <span className="landing-nav-name">Smart Campus</span>
-          </div>
-          <nav className="landing-nav-links">
-            {isAuthenticated ? (
-              <Link to="/dashboard" className="landing-nav-cta">Go to Dashboard</Link>
-            ) : (
-              <>
-                <Link to="/login" className="landing-nav-link">Sign In</Link>
-                <Link to="/register" className="landing-nav-cta">Get Started</Link>
-              </>
-            )}
-          </nav>
-        </div>
-      </header>
-
       {/* Hero */}
       <section className="landing-hero">
         <div className="landing-hero-bg">

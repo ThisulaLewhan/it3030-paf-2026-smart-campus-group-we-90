@@ -1,6 +1,7 @@
 package com.smartcampus.controller;
 
 import com.smartcampus.dto.CommentDTO;
+import com.smartcampus.dto.TicketStatusUpdateDTO;
 import com.smartcampus.entity.Ticket;
 import com.smartcampus.entity.TicketComment;
 import com.smartcampus.service.TicketCommentService;
@@ -10,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -57,6 +59,26 @@ public class TicketController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteTicket(@PathVariable String id) {
         ticketService.deleteTicket(id);
+    }
+
+    /**
+     * PATCH /api/tickets/{id}/status
+     * Validates and applies a status transition with role-based enforcement.
+     * Returns 200 OK; 400 for invalid transition/missing fields; 403 for unauthorized role.
+     * IllegalArgumentException → 400 and ForbiddenException → 403 via GlobalExceptionHandler.
+     */
+    @PatchMapping("/{id}/status")
+    public Ticket updateStatus(
+            @PathVariable String id,
+            @RequestBody TicketStatusUpdateDTO dto,
+            Authentication auth) {
+
+        String requesterRole = auth.getAuthorities().stream()
+                .map(a -> a.getAuthority())
+                .findFirst()
+                .orElse("ROLE_USER");
+
+        return ticketService.transitionStatus(id, dto, auth.getName(), requesterRole);
     }
 
     // ---- Comment endpoints ---- //

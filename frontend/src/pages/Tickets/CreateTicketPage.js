@@ -51,12 +51,8 @@ function CreateTicketPage() {
     setTechLoading(true);
     setTechError(null);
     userService
-      .getAllUsers()
-      .then((res) => {
-        // Backend Role enum only has USER and ADMIN — show all non-USER accounts
-        const eligible = res.data.filter((u) => u.role !== "USER");
-        setTechnicians(eligible);
-      })
+      .getTechnicians()
+      .then((res) => setTechnicians(res.data))
       .catch(() => setTechError("Could not load technicians"))
       .finally(() => setTechLoading(false));
   }, [currentUser]); // depend on currentUser object, not derived boolean

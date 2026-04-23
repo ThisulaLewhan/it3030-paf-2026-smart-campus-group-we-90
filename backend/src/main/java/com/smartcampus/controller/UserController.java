@@ -40,6 +40,20 @@ public class UserController {
         return ResponseEntity.ok(users);
     }
 
+    /**
+     * GET /api/users/technicians
+     * Returns all users with ADMIN role (eligible to be assigned as technicians).
+     * Accessible by any authenticated user so the create-ticket form can populate the dropdown.
+     */
+    @GetMapping("/technicians")
+    public ResponseEntity<List<UserDto>> getTechnicians() {
+        List<UserDto> technicians = userService.getAllUsers().stream()
+                .filter(u -> u.getRole() != null && u.getRole().name().equals("ADMIN"))
+                .map(authService::toUserDto)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(technicians);
+    }
+
     @PutMapping("/{id}/role")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserDto> updateRole(

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import userService from "../../services/userService";
 import "./AdminUsersPage.css";
 
-const ROLE_OPTIONS = ["ALL", "ADMIN", "USER"];
+const ROLE_OPTIONS = ["ALL", "ADMIN", "TECHNICIAN", "USER"];
 
 function AdminUsersPage() {
   const [users, setUsers] = useState([]);
@@ -153,6 +153,7 @@ function AdminUsersPage() {
                         disabled={busyUserId === user.id}
                       >
                         <option value="USER">USER</option>
+                        <option value="TECHNICIAN">TECHNICIAN</option>
                         <option value="ADMIN">ADMIN</option>
                       </select>
                     </td>

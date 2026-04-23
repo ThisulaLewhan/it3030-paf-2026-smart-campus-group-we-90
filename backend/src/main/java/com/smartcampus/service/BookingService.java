@@ -4,6 +4,8 @@ import com.smartcampus.dto.BookingRequestDTO;
 import com.smartcampus.entity.Booking;
 import com.smartcampus.entity.BookingStatus;
 import com.smartcampus.repository.BookingRepository;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -21,6 +23,20 @@ public class BookingService {
 
     public List<Booking> getAllBookings() {
         return bookingRepository.findAll();
+    }
+
+    public List<Booking> getFilteredBookings(String resourceId, BookingStatus status, LocalDate date) {
+        Booking probe = new Booking();
+        if (resourceId != null) probe.setResourceId(resourceId);
+        if (status != null) probe.setStatus(status);
+        if (date != null) probe.setDate(date);
+
+        ExampleMatcher matcher = ExampleMatcher.matching()
+                .withIgnoreNullValues()
+                .withIgnorePaths("id")
+                .withStringMatcher(ExampleMatcher.StringMatcher.EXACT);
+
+        return bookingRepository.findAll(Example.of(probe, matcher));
     }
 
     public List<Booking> getBookingsByUserId(String userId) {

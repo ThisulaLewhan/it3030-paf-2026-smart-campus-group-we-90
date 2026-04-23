@@ -2,13 +2,17 @@ package com.smartcampus.controller;
 
 import com.smartcampus.dto.BookingRequestDTO;
 import com.smartcampus.entity.Booking;
+import com.smartcampus.entity.BookingStatus;
 import com.smartcampus.entity.User;
 import com.smartcampus.service.BookingService;
 import com.smartcampus.service.UserService;
 import jakarta.validation.Valid;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +31,15 @@ public class BookingController {
     @GetMapping
     public List<Booking> getBookings() {
         return bookingService.getAllBookings();
+    }
+
+    @GetMapping("/admin/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<Booking> getAdminBookings(
+            @RequestParam(required = false) String resourceId,
+            @RequestParam(required = false) BookingStatus status,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        return bookingService.getFilteredBookings(resourceId, status, date);
     }
 
     @GetMapping("/my-bookings")

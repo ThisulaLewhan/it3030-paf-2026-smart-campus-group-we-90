@@ -45,4 +45,9 @@ public class BookingController {
     public void deleteBooking(@PathVariable Long id) {
         bookingService.deleteBooking(id);
     }
+
+    @PatchMapping("/{id}/approve")
+    public Booking approveBooking(@PathVariable Long id) {
+        return bookingService.approveBooking(id);
+    }
 }

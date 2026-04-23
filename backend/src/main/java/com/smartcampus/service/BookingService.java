@@ -61,6 +61,20 @@ public class BookingService {
         return bookingRepository.save(existingBooking);
     }
 
+    public Booking approveBooking(Long id) {
+        Booking booking = getBookingById(id);
+        
+        if (booking.getStatus() != BookingStatus.PENDING) {
+            throw new IllegalStateException("Only PENDING bookings can be approved.");
+        }
+        
+        // Ensure no other APPROVED booking has taken this slot
+        checkForConflicts(booking.getResourceId(), booking.getDate(), booking.getStartTime(), booking.getEndTime(), id);
+        
+        booking.setStatus(BookingStatus.APPROVED);
+        return bookingRepository.save(booking);
+    }
+
     public void deleteBooking(Long id) {
         bookingRepository.deleteById(id);
     }

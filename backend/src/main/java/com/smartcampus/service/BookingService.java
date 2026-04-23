@@ -43,7 +43,7 @@ public class BookingService {
         return bookingRepository.findByUserId(userId);
     }
 
-    public Booking getBookingById(Long id) {
+    public Booking getBookingById(String id) {
         return bookingRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Booking not found: " + id));
     }
@@ -66,7 +66,7 @@ public class BookingService {
         return bookingRepository.save(booking);
     }
 
-    public Booking updateBooking(Long id, BookingRequestDTO updatedBooking) {
+    public Booking updateBooking(String id, BookingRequestDTO updatedBooking) {
         checkForConflicts(updatedBooking.getResourceId(), updatedBooking.getDate(), updatedBooking.getStartTime(), updatedBooking.getEndTime(), id);
 
         Booking existingBooking = getBookingById(id);
@@ -81,7 +81,7 @@ public class BookingService {
         return bookingRepository.save(existingBooking);
     }
 
-    public Booking approveBooking(Long id) {
+    public Booking approveBooking(String id) {
         Booking booking = getBookingById(id);
         
         if (booking.getStatus() != BookingStatus.PENDING) {
@@ -95,7 +95,7 @@ public class BookingService {
         return bookingRepository.save(booking);
     }
 
-    public Booking rejectBooking(Long id, String reason) {
+    public Booking rejectBooking(String id, String reason) {
         Booking booking = getBookingById(id);
 
         if (booking.getStatus() != BookingStatus.PENDING) {
@@ -111,7 +111,7 @@ public class BookingService {
         return bookingRepository.save(booking);
     }
 
-    public Booking cancelBooking(Long id) {
+    public Booking cancelBooking(String id) {
         Booking booking = getBookingById(id);
 
         if (booking.getStatus() != BookingStatus.APPROVED) {
@@ -122,11 +122,11 @@ public class BookingService {
         return bookingRepository.save(booking);
     }
 
-    public void deleteBooking(Long id) {
+    public void deleteBooking(String id) {
         bookingRepository.deleteById(id);
     }
 
-    private void checkForConflicts(String resourceId, LocalDate date, LocalTime startTime, LocalTime endTime, Long excludeBookingId) {
+    private void checkForConflicts(String resourceId, LocalDate date, LocalTime startTime, LocalTime endTime, String excludeBookingId) {
         List<Booking> dailyBookings = bookingRepository.findByResourceIdAndDate(resourceId, date);
         for (Booking existing : dailyBookings) {
             if (excludeBookingId != null && excludeBookingId.equals(existing.getId())) {

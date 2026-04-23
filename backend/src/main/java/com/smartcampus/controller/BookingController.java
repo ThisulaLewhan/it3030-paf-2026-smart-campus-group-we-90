@@ -49,7 +49,7 @@ public class BookingController {
     }
 
     @GetMapping("/{id}")
-    public Booking getBooking(@PathVariable Long id) {
+    public Booking getBooking(@PathVariable String id) {
         return bookingService.getBookingById(id);
     }
 
@@ -60,29 +60,29 @@ public class BookingController {
     }
 
     @PutMapping("/{id}")
-    public Booking updateBooking(@PathVariable Long id, @Valid @RequestBody BookingRequestDTO requestDTO) {
+    public Booking updateBooking(@PathVariable String id, @Valid @RequestBody BookingRequestDTO requestDTO) {
         return bookingService.updateBooking(id, requestDTO);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteBooking(@PathVariable Long id) {
+    public void deleteBooking(@PathVariable String id) {
         bookingService.deleteBooking(id);
     }
 
     @PatchMapping("/{id}/approve")
-    public Booking approveBooking(@PathVariable Long id) {
+    public Booking approveBooking(@PathVariable String id) {
         return bookingService.approveBooking(id);
     }
 
     @PatchMapping("/{id}/reject")
-    public Booking rejectBooking(@PathVariable Long id, @RequestBody Map<String, String> payload) {
+    public Booking rejectBooking(@PathVariable String id, @RequestBody Map<String, String> payload) {
         String reason = payload.get("reason");
         return bookingService.rejectBooking(id, reason);
     }
 
     @PatchMapping("/{id}/cancel")
-    public Booking cancelBooking(@PathVariable Long id) {
+    public Booking cancelBooking(@PathVariable String id) {
         return bookingService.cancelBooking(id);
     }
 }

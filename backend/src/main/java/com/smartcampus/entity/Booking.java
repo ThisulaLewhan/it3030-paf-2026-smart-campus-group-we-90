@@ -1,53 +1,33 @@
 package com.smartcampus.entity;
 
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
-@Entity
-@Table(name = "bookings")
+@Document(collection = "bookings")
 public class Booking {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
-    @Column(name = "resource_id", nullable = false)
     private String resourceId;
-
-    @Column(name = "user_id", nullable = false)
     private String userId;
-
-    @Column(nullable = false)
     private LocalDate date;
-
-    @Column(name = "start_time", nullable = false)
     private LocalTime startTime;
-
-    @Column(name = "end_time", nullable = false)
     private LocalTime endTime;
-
-    @Column(length = 500)
     private String purpose;
-
-    @ElementCollection
-    @CollectionTable(name = "booking_attendees", joinColumns = @JoinColumn(name = "booking_id"))
-    @Column(name = "attendee")
     private List<String> attendees;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private BookingStatus status;
-
-    @Column(length = 500)
     private String rejectionReason;
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

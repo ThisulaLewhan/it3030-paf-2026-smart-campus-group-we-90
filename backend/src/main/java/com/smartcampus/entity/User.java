@@ -48,6 +48,11 @@ public class User {
         this.name = name;
     }
 
+    /** Alias kept for backward-compatibility with ticket service code. */
+    public String getUsername() {
+        return name;
+    }
+
     public String getEmail() {
         return email;
     }
@@ -95,5 +100,4 @@ public class User {
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
-
 }

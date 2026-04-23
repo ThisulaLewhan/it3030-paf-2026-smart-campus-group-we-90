@@ -1,14 +1,33 @@
 import api from "./api";
 
-const endpoint = "/tickets";
+const endpoint = "/incident-tickets";
 
 const ticketService = {
   endpoint,
-  getAll: () => api.get(endpoint),
+
+  // Tickets
+  getAll: (params) => api.get(endpoint, { params }),
   getById: (id) => api.get(`${endpoint}/${id}`),
   create: (payload) => api.post(endpoint, payload),
-  update: (id, payload) => api.put(`${endpoint}/${id}`, payload),
-  remove: (id) => api.delete(`${endpoint}/${id}`),
+
+  // Status workflow
+  updateStatus: (id, payload) => api.patch(`${endpoint}/${id}/status`, payload),
+  reject: (id, reason) => api.patch(`${endpoint}/${id}/reject`, { reason }),
+  assign: (id, technicianId) => api.patch(`${endpoint}/${id}/assign`, { technicianId }),
+
+  // Attachments
+  getAttachments: (id) => api.get(`${endpoint}/${id}/attachments`),
+  uploadAttachments: (id, formData) =>
+    api.post(`${endpoint}/${id}/attachments`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }),
+
+  // Comments
+  getComments: (id) => api.get(`${endpoint}/${id}/comments`),
+  addComment: (id, content) => api.post(`${endpoint}/${id}/comments`, { content }),
+  editComment: (id, commentId, content) =>
+    api.put(`${endpoint}/${id}/comments/${commentId}`, { content }),
+  deleteComment: (id, commentId) => api.delete(`${endpoint}/${id}/comments/${commentId}`),
 };
 
 export default ticketService;

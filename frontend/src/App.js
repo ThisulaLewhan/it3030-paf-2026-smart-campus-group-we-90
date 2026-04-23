@@ -12,7 +12,9 @@ import NotFound from "./pages/NotFound";
 import NotificationPreferencesPage from "./pages/Notifications/NotificationPreferencesPage";
 import NotificationsPage from "./pages/Notifications/NotificationsPage";
 import ResourcesPage from "./pages/Resources/ResourcesPage";
-import TicketsPage from "./pages/Tickets/TicketsPage";
+import TicketDetailPage from "./pages/Tickets/TicketDetailPage";
+import TicketListPage from "./pages/Tickets/TicketListPage";
+import CreateTicketPage from "./pages/Tickets/CreateTicketPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AccountSecurityPage from "./pages/Security/AccountSecurityPage";
 import AdminUsersPage from "./pages/Admin/AdminUsersPage";
@@ -31,7 +33,7 @@ function App() {
             <Route path="/login" element={<NewLoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
           </Route>
-          
+
           {/* Invisible component strictly used as the OAuth Callback catch-basin */}
           <Route path="/oauth2-redirect" element={<OAuth2RedirectHandler />} />
 
@@ -43,7 +45,9 @@ function App() {
               <Route path="security" element={<AccountSecurityPage />} />
               <Route path="resources" element={<ResourcesPage />} />
               <Route path="bookings" element={<BookingsPage />} />
-              <Route path="tickets" element={<TicketsPage />} />
+              <Route path="tickets" element={<TicketListPage />} />
+              <Route path="tickets/new" element={<CreateTicketPage />} />
+              <Route path="tickets/:id" element={<TicketDetailPage />} />
               <Route path="notifications" element={<NotificationsPage />} />
               <Route path="notifications/preferences" element={<NotificationPreferencesPage />} />
               <Route path="unauthorized" element={<Unauthorized />} />

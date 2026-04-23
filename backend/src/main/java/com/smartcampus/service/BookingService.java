@@ -6,6 +6,8 @@ import com.smartcampus.entity.BookingStatus;
 import com.smartcampus.repository.BookingRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -27,6 +29,8 @@ public class BookingService {
     }
 
     public Booking createBooking(BookingRequestDTO requestDTO) {
+        checkForConflicts(requestDTO.getResourceId(), requestDTO.getDate(), requestDTO.getStartTime(), requestDTO.getEndTime(), null);
+        
         Booking booking = new Booking();
         booking.setResourceId(requestDTO.getResourceId());
         booking.setUserId(requestDTO.getUserId());
@@ -43,6 +47,8 @@ public class BookingService {
     }
 
     public Booking updateBooking(Long id, BookingRequestDTO updatedBooking) {
+        checkForConflicts(updatedBooking.getResourceId(), updatedBooking.getDate(), updatedBooking.getStartTime(), updatedBooking.getEndTime(), id);
+
         Booking existingBooking = getBookingById(id);
         existingBooking.setResourceId(updatedBooking.getResourceId());
         existingBooking.setUserId(updatedBooking.getUserId());
@@ -57,5 +63,20 @@ public class BookingService {
 
     public void deleteBooking(Long id) {
         bookingRepository.deleteById(id);
+    }
+
+    private void checkForConflicts(String resourceId, LocalDate date, LocalTime startTime, LocalTime endTime, Long excludeBookingId) {
+        List<Booking> dailyBookings = bookingRepository.findByResourceIdAndDate(resourceId, date);
+        for (Booking existing : dailyBookings) {
+            if (excludeBookingId != null && excludeBookingId.equals(existing.getId())) {
+                continue;
+            }
+            if (existing.getStatus() == BookingStatus.CANCELLED || existing.getStatus() == BookingStatus.REJECTED) {
+                continue;
+            }
+            if (startTime.isBefore(existing.getEndTime()) && endTime.isAfter(existing.getStartTime())) {
+                throw new IllegalStateException("Time slot conflicts with an existing booking.");
+            }
+        }
     }
 }

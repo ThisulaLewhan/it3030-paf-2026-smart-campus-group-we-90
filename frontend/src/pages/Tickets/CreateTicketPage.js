@@ -45,15 +45,17 @@ function CreateTicketPage() {
   const [submitting, setSubmitting] = useState(false);
   const [apiError, setApiError] = useState(null);
 
+  // Fetch technicians whenever the current user changes (fixes stale-auth / hard-refresh issue)
   useEffect(() => {
-    if (!isAdmin) return;
+    if (currentUser?.role !== "ADMIN") return;
     setTechLoading(true);
+    setTechError(null);
     userService
       .getTechnicians()
       .then((res) => setTechnicians(res.data))
       .catch(() => setTechError("Could not load technicians"))
       .finally(() => setTechLoading(false));
-  }, [isAdmin]);
+  }, [currentUser]); // depend on currentUser object, not derived boolean
 
   // ── Field change ─────────────────────────────────────────────────────────
   function handleChange(e) {

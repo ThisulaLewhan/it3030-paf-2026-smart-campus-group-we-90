@@ -48,7 +48,7 @@ public class UserController {
     @GetMapping("/technicians")
     public ResponseEntity<List<UserDto>> getTechnicians() {
         List<UserDto> technicians = userService.getAllUsers().stream()
-                .filter(u -> u.getRole() != null && u.getRole().name().equals("ADMIN"))
+                .filter(u -> u.getRole() != null && u.getRole().name().equals("TECHNICIAN"))
                 .map(authService::toUserDto)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(technicians);

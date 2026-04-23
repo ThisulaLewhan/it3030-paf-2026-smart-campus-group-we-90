@@ -132,7 +132,8 @@ public class BookingService {
             if (excludeBookingId != null && excludeBookingId.equals(existing.getId())) {
                 continue;
             }
-            if (existing.getStatus() != BookingStatus.APPROVED) {
+            // Ignore REJECTED and CANCELLED bookings. Both PENDING and APPROVED bookings block the time slot.
+            if (existing.getStatus() == BookingStatus.REJECTED || existing.getStatus() == BookingStatus.CANCELLED) {
                 continue;
             }
             if (startTime.isBefore(existing.getEndTime()) && endTime.isAfter(existing.getStartTime())) {

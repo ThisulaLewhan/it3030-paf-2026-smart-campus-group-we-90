@@ -91,6 +91,21 @@ public class BookingService {
         return bookingRepository.save(booking);
     }
 
+    public Booking cancelBooking(Long id) {
+        Booking booking = getBookingById(id);
+
+        if (booking.getStatus() == BookingStatus.CANCELLED) {
+            throw new IllegalStateException("Booking is already cancelled.");
+        }
+        
+        if (booking.getStatus() == BookingStatus.REJECTED) {
+            throw new IllegalStateException("Cannot cancel a rejected booking.");
+        }
+
+        booking.setStatus(BookingStatus.CANCELLED);
+        return bookingRepository.save(booking);
+    }
+
     public void deleteBooking(Long id) {
         bookingRepository.deleteById(id);
     }

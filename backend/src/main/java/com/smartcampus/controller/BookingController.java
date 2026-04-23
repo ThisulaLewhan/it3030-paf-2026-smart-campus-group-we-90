@@ -57,4 +57,9 @@ public class BookingController {
         String reason = payload.get("reason");
         return bookingService.rejectBooking(id, reason);
     }
+
+    @PatchMapping("/{id}/cancel")
+    public Booking cancelBooking(@PathVariable Long id) {
+        return bookingService.cancelBooking(id);
+    }
 }

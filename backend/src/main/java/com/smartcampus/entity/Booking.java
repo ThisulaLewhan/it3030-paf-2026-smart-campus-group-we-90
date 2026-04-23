@@ -1,29 +1,50 @@
 package com.smartcampus.entity;
 
-import java.time.LocalDateTime;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import jakarta.persistence.*;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
 
-@Document(collection = "bookings")
+@Entity
+@Table(name = "bookings")
 public class Booking {
 
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "resource_id", nullable = false)
     private String resourceId;
-    private String bookedBy;
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
 
-    private String status;
+    @Column(name = "user_id", nullable = false)
+    private String userId;
+
+    @Column(nullable = false)
+    private LocalDate date;
+
+    @Column(name = "start_time", nullable = false)
+    private LocalTime startTime;
+
+    @Column(name = "end_time", nullable = false)
+    private LocalTime endTime;
+
+    @Column(length = 500)
     private String purpose;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 
-    public String getId() {
+    @ElementCollection
+    @CollectionTable(name = "booking_attendees", joinColumns = @JoinColumn(name = "booking_id"))
+    @Column(name = "attendee")
+    private List<String> attendees;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private BookingStatus status;
+
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -35,36 +56,36 @@ public class Booking {
         this.resourceId = resourceId;
     }
 
-    public String getBookedBy() {
-        return bookedBy;
+    public String getUserId() {
+        return userId;
     }
 
-    public void setBookedBy(String bookedBy) {
-        this.bookedBy = bookedBy;
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
-    public LocalDateTime getStartTime() {
+    public LocalDate getDate() {
+        return date;
+    }
+
+    public void setDate(LocalDate date) {
+        this.date = date;
+    }
+
+    public LocalTime getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(LocalDateTime startTime) {
+    public void setStartTime(LocalTime startTime) {
         this.startTime = startTime;
     }
 
-    public LocalDateTime getEndTime() {
+    public LocalTime getEndTime() {
         return endTime;
     }
 
-    public void setEndTime(LocalDateTime endTime) {
+    public void setEndTime(LocalTime endTime) {
         this.endTime = endTime;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
     }
 
     public String getPurpose() {
@@ -75,19 +96,19 @@ public class Booking {
         this.purpose = purpose;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
+    public List<String> getAttendees() {
+        return attendees;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
+    public void setAttendees(List<String> attendees) {
+        this.attendees = attendees;
     }
 
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
+    public BookingStatus getStatus() {
+        return status;
     }
 
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
+    public void setStatus(BookingStatus status) {
+        this.status = status;
     }
 }

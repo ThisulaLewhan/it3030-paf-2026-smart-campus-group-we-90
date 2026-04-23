@@ -4,6 +4,8 @@ import com.smartcampus.dto.BookingRequestDTO;
 import com.smartcampus.entity.Booking;
 import com.smartcampus.entity.BookingStatus;
 import com.smartcampus.repository.BookingRepository;
+import com.smartcampus.repository.UserRepository;
+import com.smartcampus.entity.User;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
@@ -16,13 +18,30 @@ import java.util.List;
 public class BookingService {
 
     private final BookingRepository bookingRepository;
+    private final UserRepository userRepository;
 
-    public BookingService(BookingRepository bookingRepository) {
+    public BookingService(BookingRepository bookingRepository, UserRepository userRepository) {
         this.bookingRepository = bookingRepository;
+        this.userRepository = userRepository;
+    }
+
+    private Booking enrichWithUserDetails(Booking booking) {
+        if (booking != null && booking.getUserId() != null) {
+            userRepository.findById(booking.getUserId()).ifPresent(user -> {
+                booking.setUserName(user.getName());
+                booking.setUserEmail(user.getEmail());
+            });
+        }
+        return booking;
+    }
+
+    private List<Booking> enrichWithUserDetails(List<Booking> bookings) {
+        bookings.forEach(this::enrichWithUserDetails);
+        return bookings;
     }
 
     public List<Booking> getAllBookings() {
-        return bookingRepository.findAll();
+        return enrichWithUserDetails(bookingRepository.findAll());
     }
 
     public List<Booking> getFilteredBookings(String resourceId, BookingStatus status, LocalDate date) {
@@ -36,16 +55,17 @@ public class BookingService {
                 .withIgnorePaths("id")
                 .withStringMatcher(ExampleMatcher.StringMatcher.EXACT);
 
-        return bookingRepository.findAll(Example.of(probe, matcher));
+        return enrichWithUserDetails(bookingRepository.findAll(Example.of(probe, matcher)));
     }
 
     public List<Booking> getBookingsByUserId(String userId) {
-        return bookingRepository.findByUserId(userId);
+        return enrichWithUserDetails(bookingRepository.findByUserId(userId));
     }
 
     public Booking getBookingById(String id) {
-        return bookingRepository.findById(id)
+        Booking booking = bookingRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Booking not found: " + id));
+        return enrichWithUserDetails(booking);
     }
 
     public Booking createBooking(BookingRequestDTO requestDTO) {
@@ -58,6 +78,7 @@ public class BookingService {
         booking.setStartTime(requestDTO.getStartTime());
         booking.setEndTime(requestDTO.getEndTime());
         booking.setPurpose(requestDTO.getPurpose());
+        booking.setExpectedAttendees(requestDTO.getExpectedAttendees());
         booking.setAttendees(requestDTO.getAttendees());
         
         // Set status to PENDING
@@ -76,6 +97,7 @@ public class BookingService {
         existingBooking.setStartTime(updatedBooking.getStartTime());
         existingBooking.setEndTime(updatedBooking.getEndTime());
         existingBooking.setPurpose(updatedBooking.getPurpose());
+        existingBooking.setExpectedAttendees(updatedBooking.getExpectedAttendees());
         existingBooking.setAttendees(updatedBooking.getAttendees());
         
         return bookingRepository.save(existingBooking);

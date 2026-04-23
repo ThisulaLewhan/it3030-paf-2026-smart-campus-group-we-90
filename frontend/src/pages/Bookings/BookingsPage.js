@@ -84,6 +84,7 @@ function BookingsPage() {
     startTime: '',
     endTime: '',
     purpose: '',
+    expectedAttendees: '',
   });
 
   const [adminFilters, setAdminFilters] = useState({
@@ -190,7 +191,7 @@ function BookingsPage() {
     setIsSubmitting(true);
     try {
       await bookingService.create({ ...formData, userId: user.id });
-      setFormData({ resourceId: '', date: '', startTime: '', endTime: '', purpose: '' });
+      setFormData({ resourceId: '', date: '', startTime: '', endTime: '', purpose: '', expectedAttendees: '' });
       fetchBookings();
     } catch (err) {
       if (err.response && err.response.status === 409) {
@@ -332,6 +333,10 @@ function BookingsPage() {
                   <label>Purpose</label>
                   <textarea name="purpose" value={formData.purpose} onChange={handleInputChange} required rows="2" placeholder="Briefly describe the event or purpose..." />
                 </div>
+                <div className="bk-form-group">
+                  <label>Expected Attendees</label>
+                  <input type="number" name="expectedAttendees" value={formData.expectedAttendees} onChange={handleInputChange} min="1" placeholder="e.g. 50" />
+                </div>
                 <button type="submit" className="bk-submit-btn" disabled={isSubmitting}>
                   <CalendarIcon />
                   {isSubmitting ? 'Submitting...' : 'Submit Booking Request'}
@@ -393,7 +398,7 @@ function BookingsPage() {
                   <tr>
                     <th>Resource</th>
                     <th>Date & Time</th>
-                    <th>Purpose</th>
+                    <th>Details</th>
                     <th>Status</th>
                     <th>Action</th>
                   </tr>
@@ -408,7 +413,12 @@ function BookingsPage() {
                           </div>
                           <div>
                             <div className="bk-table-resource-name">{booking.resourceId}</div>
-                            {isAdmin && <div className="bk-table-resource-type">User: {booking.userId?.substring(0, 8)}...</div>}
+                            {isAdmin && (
+                              <div className="bk-table-resource-type">
+                                {booking.userName ? booking.userName : `User: ${booking.userId?.substring(0, 8)}...`}
+                                {booking.userEmail && <div style={{ fontSize: '0.7rem', opacity: 0.75, marginTop: '2px' }}>{booking.userEmail}</div>}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </td>
@@ -418,7 +428,14 @@ function BookingsPage() {
                           {formatTime(booking.startTime)} - {formatTime(booking.endTime)}
                         </div>
                       </td>
-                      <td>{booking.purpose}</td>
+                      <td>
+                        <div style={{ marginBottom: '0.2rem' }}>{booking.purpose}</div>
+                        {booking.expectedAttendees && (
+                          <div style={{ fontSize: '0.78rem', color: 'var(--color-slate-400)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <UsersIcon /> {booking.expectedAttendees}
+                          </div>
+                        )}
+                      </td>
                       <td>
                         <span className={`bk-status ${(booking.status || '').toLowerCase()}`}>
                           {booking.status}

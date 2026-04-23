@@ -1,6 +1,7 @@
 package com.smartcampus.entity;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
@@ -19,9 +20,16 @@ public class Booking {
     private LocalTime startTime;
     private LocalTime endTime;
     private String purpose;
+    private Integer expectedAttendees;
     private List<String> attendees;
     private BookingStatus status;
     private String rejectionReason;
+
+    @Transient
+    private String userName;
+
+    @Transient
+    private String userEmail;
 
     public String getId() {
         return id;
@@ -79,6 +87,14 @@ public class Booking {
         this.purpose = purpose;
     }
 
+    public Integer getExpectedAttendees() {
+        return expectedAttendees;
+    }
+
+    public void setExpectedAttendees(Integer expectedAttendees) {
+        this.expectedAttendees = expectedAttendees;
+    }
+
     public List<String> getAttendees() {
         return attendees;
     }
@@ -101,5 +117,21 @@ public class Booking {
 
     public void setRejectionReason(String rejectionReason) {
         this.rejectionReason = rejectionReason;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getUserEmail() {
+        return userEmail;
+    }
+
+    public void setUserEmail(String userEmail) {
+        this.userEmail = userEmail;
     }
 }

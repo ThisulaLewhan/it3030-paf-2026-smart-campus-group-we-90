@@ -29,6 +29,8 @@ public class BookingRequestDTO {
     @NotBlank(message = "Purpose is required")
     private String purpose;
 
+    private Integer expectedAttendees;
+
     private List<String> attendees;
 
     // Getters and Setters
@@ -79,6 +81,14 @@ public class BookingRequestDTO {
 
     public void setPurpose(String purpose) {
         this.purpose = purpose;
+    }
+
+    public Integer getExpectedAttendees() {
+        return expectedAttendees;
+    }
+
+    public void setExpectedAttendees(Integer expectedAttendees) {
+        this.expectedAttendees = expectedAttendees;
     }
 
     public List<String> getAttendees() {

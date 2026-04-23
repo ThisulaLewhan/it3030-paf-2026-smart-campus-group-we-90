@@ -1,48 +1,49 @@
 .notification-preferences-page {
   max-width: 980px;
   margin: 0 auto;
-  padding: 2rem;
   display: grid;
   gap: 1.5rem;
-  animation: fadeIn 0.4s ease-out;
+  animation: fadeIn 0.5s var(--ease-out) both;
 }
 
 .notification-preferences-hero {
-  padding: 1.75rem 2rem;
-  border-radius: 20px;
-  background: linear-gradient(135deg, #eff6ff 0%, #ffffff 58%, #f8fafc 100%);
-  border: 1px solid #dbeafe;
+  padding: 2rem 2.25rem;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(135deg, #eff6ff 0%, var(--color-white) 50%, var(--color-slate-50) 100%);
+  border: 1px solid var(--color-primary-surface);
 }
 
 .notification-preferences-eyebrow {
   margin: 0 0 0.4rem;
-  font-size: 0.82rem;
-  letter-spacing: 0.08em;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #2563eb;
+  color: var(--color-primary);
   font-weight: 700;
 }
 
 .notification-preferences-hero h1 {
   margin: 0;
-  font-size: 2rem;
-  color: #0f172a;
+  font-size: 1.8rem;
+  color: var(--color-slate-900);
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 .notification-preferences-subtitle {
-  margin: 0.65rem 0 0;
-  color: #475569;
-  font-size: 0.98rem;
-  max-width: 680px;
-  line-height: 1.65;
+  margin: 0.5rem 0 0;
+  color: var(--color-slate-600);
+  font-size: 0.92rem;
+  max-width: 620px;
+  line-height: 1.6;
 }
 
 .notification-preferences-card {
-  background: #ffffff;
-  border-radius: 20px;
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
   padding: 2rem;
-  border: 1px solid rgba(226, 232, 240, 0.9);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  border: 1px solid var(--color-slate-200);
+  box-shadow: var(--shadow-xs);
 }
 
 .notification-preferences-card-header {
@@ -50,15 +51,16 @@
 }
 
 .notification-preferences-card-header h2 {
-  margin: 0 0 0.35rem;
-  font-size: 1.25rem;
-  color: #0f172a;
+  margin: 0 0 0.3rem;
+  font-size: 1.15rem;
+  color: var(--color-slate-900);
+  font-weight: 700;
 }
 
 .notification-preferences-card-header p {
   margin: 0;
-  color: #64748b;
-  font-size: 0.95rem;
+  color: var(--color-slate-500);
+  font-size: 0.92rem;
 }
 
 .notification-preferences-form {
@@ -68,7 +70,7 @@
 
 .notification-preferences-list {
   display: grid;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .notification-preferences-item {
@@ -77,27 +79,37 @@
   justify-content: space-between;
   gap: 1rem;
   padding: 1rem 1.1rem;
-  border-radius: 16px;
-  border: 1px solid #e2e8f0;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-slate-200);
+  background: var(--bg-card);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.notification-preferences-item:hover {
+  border-color: var(--color-slate-300);
+  box-shadow: var(--shadow-sm);
 }
 
 .notification-preferences-item-copy h3 {
   margin: 0;
-  font-size: 1rem;
-  color: #0f172a;
+  font-size: 0.95rem;
+  color: var(--color-slate-900);
+  font-weight: 600;
 }
 
 .notification-preferences-item-copy p {
-  margin: 0.45rem 0 0;
-  color: #475569;
-  line-height: 1.55;
+  margin: 0.3rem 0 0;
+  color: var(--color-slate-500);
+  line-height: 1.5;
+  font-size: 0.88rem;
 }
 
 .notification-preferences-toggle {
   position: relative;
   display: inline-flex;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .notification-preferences-toggle input {
@@ -107,54 +119,55 @@
 }
 
 .notification-preferences-toggle-ui {
-  width: 54px;
-  height: 30px;
-  border-radius: 999px;
-  background: #cbd5e1;
+  width: 48px;
+  height: 26px;
+  border-radius: var(--radius-pill);
+  background: var(--color-slate-300);
   position: relative;
-  transition: background 0.18s ease;
+  transition: background var(--transition-fast);
 }
 
 .notification-preferences-toggle-ui::after {
   content: "";
   position: absolute;
-  top: 4px;
-  left: 4px;
-  width: 22px;
-  height: 22px;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  background: #ffffff;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
-  transition: transform 0.18s ease;
+  background: var(--color-white);
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.15);
+  transition: transform var(--transition-fast);
 }
 
 .notification-preferences-toggle input:checked + .notification-preferences-toggle-ui {
-  background: #2563eb;
+  background: var(--color-primary);
 }
 
 .notification-preferences-toggle input:checked + .notification-preferences-toggle-ui::after {
-  transform: translateX(24px);
+  transform: translateX(22px);
 }
 
 .notification-preferences-status {
-  padding: 1rem 1.1rem;
-  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md);
   background: #eff6ff;
-  color: #1d4ed8;
+  color: var(--color-primary-deeper);
   border: 1px solid #bfdbfe;
   font-weight: 500;
+  font-size: 0.92rem;
 }
 
 .notification-preferences-status-error {
-  background: #fef2f2;
-  color: #b91c1c;
-  border-color: #fecaca;
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  border-color: var(--color-error-border);
 }
 
 .notification-preferences-status-success {
-  background: #ecfdf5;
-  color: #047857;
-  border-color: #a7f3d0;
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  border-color: var(--color-success-border);
 }
 
 .notification-preferences-actions {
@@ -164,43 +177,29 @@
 
 .notification-preferences-button {
   border: 0;
-  border-radius: 10px;
-  background: #2563eb;
-  color: #f8fafc;
-  padding: 0.8rem 1.15rem;
-  font-size: 0.95rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary);
+  color: var(--color-white);
+  padding: 0.7rem 1.2rem;
+  font-size: 0.92rem;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  font-family: var(--font-sans);
 }
 
 .notification-preferences-button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.18);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.2);
 }
 
 .notification-preferences-button:disabled,
 .notification-preferences-toggle input:disabled + .notification-preferences-toggle-ui {
-  opacity: 0.7;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 @media (max-width: 768px) {
-  .notification-preferences-page {
-    padding: 1rem;
-  }
-
   .notification-preferences-hero,
   .notification-preferences-card {
     padding: 1.25rem;

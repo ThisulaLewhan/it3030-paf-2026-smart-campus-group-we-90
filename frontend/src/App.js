@@ -1,15 +1,14 @@
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import "./App.css";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 import MainLayout from "./layouts/MainLayout";
-import LoginPage from "./pages/Auth/LoginPage";
 import NewLoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import OAuth2RedirectHandler from "./pages/Auth/OAuth2RedirectHandler";
 import BookingsPage from "./pages/Bookings/BookingsPage";
 import Home from "./pages/Home";
+import LandingPage from "./pages/LandingPage";
 import NotFound from "./pages/NotFound";
-import UserActivityPage from "./pages/Activity/UserActivityPage";
 import NotificationPreferencesPage from "./pages/Notifications/NotificationPreferencesPage";
 import NotificationsPage from "./pages/Notifications/NotificationsPage";
 import ResourcesPage from "./pages/Resources/ResourcesPage";
@@ -18,7 +17,6 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import AccountSecurityPage from "./pages/Security/AccountSecurityPage";
 import AdminUsersPage from "./pages/Admin/AdminUsersPage";
 import Unauthorized from "./pages/Unauthorized";
-
 import ProfilePage from "./pages/Profile/ProfilePage";
 
 function App() {
@@ -26,6 +24,9 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
+          {/* Public landing page at root */}
+          <Route path="/" element={<LandingPage />} />
+
           {/* Public login route (standalone page without sidebar) */}
           <Route path="/login" element={<NewLoginPage />} />
           
@@ -38,10 +39,8 @@ function App() {
           {/* Main layout with sidebar */}
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<MainLayout />}>
-              <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="dashboard" element={<Home />} />
               <Route path="profile" element={<ProfilePage />} />
-              <Route path="activity" element={<UserActivityPage />} />
               <Route path="security" element={<AccountSecurityPage />} />
               <Route path="resources" element={<ResourcesPage />} />
               <Route path="bookings" element={<BookingsPage />} />
@@ -49,7 +48,6 @@ function App() {
               <Route path="notifications" element={<NotificationsPage />} />
               <Route path="notifications/preferences" element={<NotificationPreferencesPage />} />
               <Route path="unauthorized" element={<Unauthorized />} />
-              <Route path="auth/login" element={<LoginPage />} />
               <Route
                 path="admin/users"
                 element={
@@ -68,4 +66,3 @@ function App() {
 }
 
 export default App;
-

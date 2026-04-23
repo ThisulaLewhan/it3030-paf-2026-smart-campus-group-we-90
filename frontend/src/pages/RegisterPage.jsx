@@ -55,9 +55,17 @@ const RegisterPage = () => {
     <div className="login-container register-page">
       <div className="auth-shell">
         <div className="login-card">
+          <Link to="/" className="login-back-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
+            </svg>
+            Back to Home
+          </Link>
+
+
           <h2 className="login-title">Create Account</h2>
           <p className="login-subtitle">
-            Set up your account to access.
+            Set up your account to get started.
           </p>
 
           {error && <div className="login-error">{error}</div>}

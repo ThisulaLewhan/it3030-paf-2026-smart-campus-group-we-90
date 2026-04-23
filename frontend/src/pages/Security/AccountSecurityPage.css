@@ -1,10 +1,9 @@
 .security-page {
   max-width: 960px;
   margin: 0 auto;
-  padding: 2rem;
   display: grid;
   gap: 1.5rem;
-  animation: fadeIn 0.4s ease-out;
+  animation: fadeIn 0.5s var(--ease-out) both;
 }
 
 .security-hero {
@@ -12,40 +11,57 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 1.5rem;
-  padding: 1.75rem 2rem;
-  border-radius: 20px;
-  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 55%, #eff6ff 100%);
-  border: 1px solid #dbeafe;
+  padding: 2rem 2.25rem;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(135deg, var(--color-slate-50) 0%, var(--color-white) 50%, #eff6ff 100%);
+  border: 1px solid var(--color-primary-surface);
+  position: relative;
+  overflow: hidden;
+}
+
+.security-hero::before {
+  content: "";
+  position: absolute;
+  top: -30%;
+  right: -5%;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.05);
+  pointer-events: none;
 }
 
 .security-eyebrow {
   margin: 0 0 0.4rem;
-  font-size: 0.82rem;
-  letter-spacing: 0.08em;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #2563eb;
+  color: var(--color-primary);
   font-weight: 700;
 }
 
 .security-hero h1 {
   margin: 0;
-  font-size: 2rem;
-  color: #0f172a;
+  font-size: 1.8rem;
+  color: var(--color-slate-900);
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 .security-subtitle {
-  margin: 0.65rem 0 0;
-  color: #475569;
-  font-size: 0.98rem;
-  max-width: 620px;
+  margin: 0.5rem 0 0;
+  color: var(--color-slate-600);
+  font-size: 0.92rem;
+  max-width: 560px;
+  line-height: 1.6;
 }
 
 .security-card {
-  background: #ffffff;
-  border-radius: 20px;
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
   padding: 2rem;
-  border: 1px solid rgba(226, 232, 240, 0.9);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  border: 1px solid var(--color-slate-200);
+  box-shadow: var(--shadow-xs);
 }
 
 .security-card-header {
@@ -53,15 +69,16 @@
 }
 
 .security-card-header h2 {
-  margin: 0 0 0.35rem;
-  font-size: 1.25rem;
-  color: #0f172a;
+  margin: 0 0 0.3rem;
+  font-size: 1.15rem;
+  color: var(--color-slate-900);
+  font-weight: 700;
 }
 
 .security-card-header p {
   margin: 0;
-  color: #64748b;
-  font-size: 0.95rem;
+  color: var(--color-slate-500);
+  font-size: 0.92rem;
 }
 
 .security-grid,
@@ -74,35 +91,37 @@
 .security-item label,
 .security-field label {
   display: block;
-  font-size: 0.85rem;
-  color: #64748b;
+  font-size: 0.78rem;
+  color: var(--color-slate-500);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   font-weight: 600;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.45rem;
 }
 
 .security-item-value,
 .security-field input {
   width: 100%;
   box-sizing: border-box;
-  min-height: 52px;
-  padding: 14px 16px;
-  border-radius: 12px;
-  border: 1px solid #e2e8f0;
-  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
-  color: #334155;
-  font-size: 1rem;
+  min-height: 48px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-slate-200);
+  background: var(--color-slate-50);
+  color: var(--color-slate-700);
+  font-size: 0.95rem;
+  font-family: var(--font-sans);
 }
 
 .security-field input {
+  background: var(--color-white);
   outline: none;
-  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .security-field input:focus {
-  border-color: #60a5fa;
-  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.18);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .security-field-full {
@@ -114,9 +133,9 @@
 }
 
 .field-error {
-  margin: 0.5rem 0 0;
-  color: #b91c1c;
-  font-size: 0.88rem;
+  margin: 0.4rem 0 0;
+  color: var(--color-error);
+  font-size: 0.85rem;
 }
 
 .security-form {
@@ -125,24 +144,25 @@
 }
 
 .security-status {
-  padding: 1rem 1.1rem;
-  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md);
   background: #eff6ff;
-  color: #1d4ed8;
+  color: var(--color-primary-deeper);
   border: 1px solid #bfdbfe;
   font-weight: 500;
+  font-size: 0.92rem;
 }
 
 .security-status-error {
-  background: #fef2f2;
-  color: #b91c1c;
-  border-color: #fecaca;
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  border-color: var(--color-error-border);
 }
 
 .security-status-success {
-  background: #ecfdf5;
-  color: #047857;
-  border-color: #a7f3d0;
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  border-color: var(--color-success-border);
 }
 
 .security-actions {
@@ -153,58 +173,41 @@
 .security-primary-button,
 .security-logout-button {
   border: 0;
-  border-radius: 10px;
-  color: #f8fafc;
-  padding: 0.8rem 1.15rem;
-  font-size: 0.95rem;
+  border-radius: var(--radius-sm);
+  color: var(--color-white);
+  padding: 0.7rem 1.1rem;
+  font-size: 0.92rem;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  font-family: var(--font-sans);
 }
 
 .security-primary-button {
-  background: #2563eb;
+  background: var(--color-primary);
 }
 
 .security-logout-button {
-  background: #0f172a;
-}
-
-.security-primary-button:hover,
-.security-logout-button:hover {
-  transform: translateY(-1px);
+  background: var(--color-slate-900);
 }
 
 .security-primary-button:hover {
-  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.18);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.2);
 }
 
 .security-logout-button:hover {
-  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.14);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.15);
 }
 
 .security-primary-button:disabled,
 .security-field input:disabled {
-  opacity: 0.7;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 @media (max-width: 768px) {
-  .security-page {
-    padding: 1rem;
-  }
-
   .security-hero,
   .security-card {
     padding: 1.25rem;

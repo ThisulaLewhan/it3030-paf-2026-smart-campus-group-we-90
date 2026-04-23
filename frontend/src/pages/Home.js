@@ -140,7 +140,6 @@ function Home() {
                 <div className="dashboard-card-icon">
                   {cardIcons[card.icon]}
                 </div>
-                <span className="dashboard-card-badge">{card.title}</span>
               </div>
               <h3>{card.title}</h3>
               <p>{card.description}</p>

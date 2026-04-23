@@ -551,6 +551,8 @@
   justify-content: center;
   border-radius: var(--radius-md);
   flex-shrink: 0;
+  background: var(--color-primary-surface);
+  color: var(--color-primary);
 }
 
 .dashboard-card-icon svg {
@@ -597,17 +599,6 @@
   gap: 0.55rem;
 }
 
-/* Card color variants */
-.dashboard-card-blue .dashboard-card-badge { background: var(--color-primary-surface); color: var(--color-primary-deeper); }
-.dashboard-card-blue .dashboard-card-icon { background: rgba(59, 130, 246, 0.08); color: var(--color-primary); }
-.dashboard-card-amber .dashboard-card-badge { background: #fef3c7; color: #b45309; }
-.dashboard-card-amber .dashboard-card-icon { background: rgba(245, 158, 11, 0.08); color: var(--color-accent-amber); }
-.dashboard-card-emerald .dashboard-card-badge { background: #d1fae5; color: #047857; }
-.dashboard-card-emerald .dashboard-card-icon { background: rgba(16, 185, 129, 0.08); color: var(--color-accent-emerald); }
-.dashboard-card-slate .dashboard-card-badge { background: var(--color-slate-200); color: var(--color-slate-700); }
-.dashboard-card-slate .dashboard-card-icon { background: rgba(100, 116, 139, 0.08); color: var(--color-slate-500); }
-.dashboard-card-rose .dashboard-card-badge { background: #ffe4e6; color: #be123c; }
-.dashboard-card-rose .dashboard-card-icon { background: rgba(244, 63, 94, 0.08); color: var(--color-accent-rose); }
 
 /* ── Unauthorized ── */
 .unauthorized-page {

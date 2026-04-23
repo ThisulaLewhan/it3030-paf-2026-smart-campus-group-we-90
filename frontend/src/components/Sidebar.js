@@ -64,7 +64,7 @@ const moduleLinks = [
   { to: "/dashboard", label: "Dashboard", icon: "dashboard", section: "General" },
   { to: "/profile", label: "My Profile", icon: "profile", section: "General" },
   { to: "/security", label: "Account Security", icon: "security", section: "General" },
-  { to: "/notifications/preferences", label: "Notifications", icon: "notifications", section: "General" },
+  { to: "/notifications", label: "Notifications", icon: "notifications", section: "General" },
 
   // Services section
   { to: "/resources", label: "Resources", icon: "resources", section: "Services" },

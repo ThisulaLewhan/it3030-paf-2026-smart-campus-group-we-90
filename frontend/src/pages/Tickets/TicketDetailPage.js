@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import ticketService from "../../services/ticketService";
+import userService from "../../services/userService";
 import "./Tickets.css";
 
 const NEXT_STATUS = {
@@ -34,6 +35,7 @@ function TicketDetailPage() {
   // Assign
   const [technicianId, setTechnicianId] = useState("");
   const [assignMsg, setAssignMsg] = useState("");
+  const [technicians, setTechnicians] = useState([]);
 
   // Comments
   const [newComment, setNewComment] = useState("");
@@ -49,6 +51,13 @@ function TicketDetailPage() {
     loadAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  useEffect(() => {
+    if (role !== "ADMIN") return;
+    userService.getTechnicians()
+      .then((res) => setTechnicians(res.data))
+      .catch(() => setTechnicians([]));
+  }, [role]);
 
   async function loadAll() {
     setLoading(true);
@@ -249,12 +258,17 @@ function TicketDetailPage() {
           <div className="control-group">
             <h3>Assign Technician</h3>
             <div className="inline-form">
-              <input
-                type="text"
-                placeholder="Technician user ID"
+              <select
                 value={technicianId}
                 onChange={(e) => setTechnicianId(e.target.value)}
-              />
+              >
+                <option value="">— Select a technician —</option>
+                {technicians.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name} ({t.email})
+                  </option>
+                ))}
+              </select>
               <button className="btn btn-primary" onClick={handleAssign}>
                 Assign
               </button>

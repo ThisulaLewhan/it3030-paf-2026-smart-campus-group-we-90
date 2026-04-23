@@ -1,5 +1,6 @@
 package com.smartcampus.security;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -45,7 +46,16 @@ public class JwtFilter extends OncePerRequestFilter {
 
         // 2. Extract Bearer token (strip out the "Bearer " prefix)
         jwt = authHeader.substring(7);
-        userEmail = jwtService.extractUsername(jwt);
+
+        try {
+            userEmail = jwtService.extractUsername(jwt);
+        } catch (JwtException | IllegalArgumentException e) {
+            // Token is expired, malformed, or invalid — return 401 so the frontend clears it
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\":\"Unauthorized\",\"message\":\"Token is invalid or expired.\"}");
+            return;
+        }
 
         // 3. Prevent redundant lookups if the context is already authenticated
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {

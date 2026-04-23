@@ -150,7 +150,14 @@ function BookingsPage() {
     const daysInPrevMonth = new Date(year, month, 0).getDate();
     const today = new Date();
 
-    const bookedDates = new Set(bookings.filter(b => b.status === 'APPROVED' || b.status === 'PENDING').map(b => b.date));
+    const dateStatuses = {};
+    bookings.forEach(b => {
+      if (!b.date) return;
+      if (!dateStatuses[b.date]) dateStatuses[b.date] = new Set();
+      if (['APPROVED', 'PENDING', 'REJECTED'].includes(b.status)) {
+        dateStatuses[b.date].add(b.status.toLowerCase());
+      }
+    });
 
     const days = [];
     for (let i = firstDay - 1; i >= 0; i--) {
@@ -158,11 +165,12 @@ function BookingsPage() {
     }
     for (let d = 1; d <= daysInMonth; d++) {
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const statuses = dateStatuses[dateStr] ? Array.from(dateStatuses[dateStr]) : [];
       days.push({
         day: d,
         otherMonth: false,
         today: today.getDate() === d && today.getMonth() === month && today.getFullYear() === year,
-        hasBooking: bookedDates.has(dateStr),
+        statuses: statuses,
       });
     }
     const remaining = 42 - days.length;
@@ -511,9 +519,16 @@ function BookingsPage() {
               {calendarDays.map((d, i) => (
                 <div
                   key={i}
-                  className={`bk-cal-day${d.otherMonth ? ' other-month' : ''}${d.today ? ' today' : ''}${d.hasBooking ? ' has-booking' : ''}`}
+                  className={`bk-cal-day${d.otherMonth ? ' other-month' : ''}${d.today ? ' today' : ''}`}
                 >
-                  {d.day}
+                  <span>{d.day}</span>
+                  {d.statuses && d.statuses.length > 0 && (
+                    <div className="bk-cal-dots">
+                      {d.statuses.map(s => (
+                        <div key={s} className={`bk-cal-dot ${s}`}></div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

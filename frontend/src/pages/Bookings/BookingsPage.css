@@ -607,12 +607,17 @@
 }
 
 .bk-cal-day {
+  position: relative;
   font-size: 0.82rem;
   padding: 0.45rem 0;
   border-radius: var(--radius-sm);
   color: var(--color-slate-700);
   cursor: default;
   transition: all var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .bk-cal-day.other-month {
@@ -626,24 +631,25 @@
   border-radius: 50%;
 }
 
-.bk-cal-day.has-booking {
-  position: relative;
+.bk-cal-dots {
+  display: flex;
+  gap: 3px;
+  position: absolute;
+  bottom: 3px;
 }
 
-.bk-cal-day.has-booking::after {
-  content: '';
-  position: absolute;
-  bottom: 2px;
-  left: 50%;
-  transform: translateX(-50%);
+.bk-cal-dot {
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: var(--color-primary);
 }
 
-.bk-cal-day.today.has-booking::after {
-  background: var(--color-white);
+.bk-cal-dot.approved { background: var(--color-accent-emerald); }
+.bk-cal-dot.pending { background: var(--color-accent-amber); }
+.bk-cal-dot.rejected { background: var(--color-accent-rose); }
+
+.bk-cal-day.today .bk-cal-dot {
+  /* optional: slightly brighter or just keep colors */
 }
 
 .bk-cal-legend {

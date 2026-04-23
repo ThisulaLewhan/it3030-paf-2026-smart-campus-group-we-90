@@ -1,5 +1,6 @@
 package com.smartcampus.dto;
 
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -86,5 +87,13 @@ public class BookingRequestDTO {
 
     public void setAttendees(List<String> attendees) {
         this.attendees = attendees;
+    }
+
+    @AssertTrue(message = "Start time must be before end time")
+    public boolean isTimeValid() {
+        if (startTime == null || endTime == null) {
+            return true; // Let @NotNull handle this
+        }
+        return startTime.isBefore(endTime);
     }
 }

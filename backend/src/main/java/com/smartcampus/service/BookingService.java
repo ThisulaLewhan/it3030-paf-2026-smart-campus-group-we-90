@@ -23,6 +23,10 @@ public class BookingService {
         return bookingRepository.findAll();
     }
 
+    public List<Booking> getBookingsByUserId(String userId) {
+        return bookingRepository.findByUserId(userId);
+    }
+
     public Booking getBookingById(Long id) {
         return bookingRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Booking not found: " + id));

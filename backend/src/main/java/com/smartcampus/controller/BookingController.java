@@ -2,7 +2,9 @@ package com.smartcampus.controller;
 
 import com.smartcampus.dto.BookingRequestDTO;
 import com.smartcampus.entity.Booking;
+import com.smartcampus.entity.User;
 import com.smartcampus.service.BookingService;
+import com.smartcampus.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -15,14 +17,22 @@ import java.util.Map;
 public class BookingController {
 
     private final BookingService bookingService;
+    private final UserService userService;
 
-    public BookingController(BookingService bookingService) {
+    public BookingController(BookingService bookingService, UserService userService) {
         this.bookingService = bookingService;
+        this.userService = userService;
     }
 
     @GetMapping
     public List<Booking> getBookings() {
         return bookingService.getAllBookings();
+    }
+
+    @GetMapping("/my-bookings")
+    public List<Booking> getMyBookings() {
+        User currentUser = userService.getCurrentlyAuthenticatedUser();
+        return bookingService.getBookingsByUserId(currentUser.getId());
     }
 
     @GetMapping("/{id}")

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import resourceService from '../../services/resourceService';
+import resourceService from '../../../services/resourceService';
 
 function ResourceForm({ onResourceSaved, onCancel, initialData }) {
   const isEditing = !!initialData;

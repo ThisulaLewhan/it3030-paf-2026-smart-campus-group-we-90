@@ -1,60 +1,39 @@
-package com.smartcampus.entity;
+package com.smartcampus.dto;
 
-import jakarta.persistence.*;
+import com.smartcampus.entity.ResourceStatus;
+import com.smartcampus.entity.ResourceType;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
 import java.time.LocalTime;
 
-@Entity
-@Table(name = "resources")
-public class Resource {
+public class ResourceRequest {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false)
+    @NotBlank(message = "Name is required")
+    @Size(min = 2, max = 100, message = "Name must be between 2 and 100 characters")
     private String name;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @NotNull(message = "Type is required")
     private ResourceType type;
 
+    @NotNull(message = "Capacity is required")
+    @Min(value = 1, message = "Capacity must be greater than 0")
     private Integer capacity;
 
+    @NotBlank(message = "Location is required")
+    @Size(min = 2, max = 200, message = "Location must be between 2 and 200 characters")
     private String location;
 
     private LocalTime availabilityStart;
 
     private LocalTime availabilityEnd;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @NotNull(message = "Status is required")
     private ResourceStatus status;
 
-    // ── Constructors ─────────────────────────────────────────────────────────
-
-    public Resource() {
-    }
-
-    public Resource(String name, ResourceType type, Integer capacity, String location,
-                    LocalTime availabilityStart, LocalTime availabilityEnd, ResourceStatus status) {
-        this.name = name;
-        this.type = type;
-        this.capacity = capacity;
-        this.location = location;
-        this.availabilityStart = availabilityStart;
-        this.availabilityEnd = availabilityEnd;
-        this.status = status;
-    }
-
     // ── Getters & Setters ─────────────────────────────────────────────────────
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public String getName() {
         return name;

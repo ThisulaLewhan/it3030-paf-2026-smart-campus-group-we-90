@@ -1,53 +1,58 @@
 package com.smartcampus.controller;
 
+import com.smartcampus.dto.ResourceRequest;
+import com.smartcampus.dto.ResourceResponse;
 import com.smartcampus.entity.Resource;
+import com.smartcampus.entity.ResourceType;
 import com.smartcampus.service.ResourceService;
-import java.util.List;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/resources")
+@CrossOrigin(origins = "*")
 public class ResourceController {
 
-    private final ResourceService resourceService;
-
-    public ResourceController(ResourceService resourceService) {
-        this.resourceService = resourceService;
-    }
+    @Autowired
+    private ResourceService resourceService;
 
     @GetMapping
-    public List<Resource> getResources() {
-        return resourceService.getAllResources();
+    public ResponseEntity<List<ResourceResponse>> getAllResources() {
+        return ResponseEntity.ok(resourceService.getAllResources());
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<ResourceResponse>> searchResources(
+            @RequestParam(required = false) ResourceType type,
+            @RequestParam(required = false) Integer capacity,
+            @RequestParam(required = false) String location) {
+        return ResponseEntity.ok(resourceService.searchResources(type, capacity, location));
     }
 
     @GetMapping("/{id}")
-    public Resource getResource(@PathVariable String id) {
-        return resourceService.getResourceById(id);
+    public ResponseEntity<ResourceResponse> getResourceById(@PathVariable Long id) {
+        return ResponseEntity.ok(resourceService.getResourceById(id));
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public Resource createResource(@RequestBody Resource resource) {
-        return resourceService.createResource(resource);
+    public ResponseEntity<Resource> createResource(@Valid @RequestBody ResourceRequest request) {
+        Resource created = resourceService.createResource(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @PutMapping("/{id}")
-    public Resource updateResource(@PathVariable String id, @RequestBody Resource resource) {
-        return resourceService.updateResource(id, resource);
+    public ResponseEntity<ResourceResponse> updateResource(@PathVariable Long id, @Valid @RequestBody ResourceRequest request) {
+        return ResponseEntity.ok(resourceService.updateResource(id, request));
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteResource(@PathVariable String id) {
+    public ResponseEntity<Void> deleteResource(@PathVariable Long id) {
         resourceService.deleteResource(id);
+        return ResponseEntity.noContent().build();
     }
 }

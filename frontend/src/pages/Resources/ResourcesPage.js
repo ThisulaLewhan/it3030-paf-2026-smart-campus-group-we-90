@@ -3,8 +3,12 @@ import resourceService from '../../services/resourceService';
 import ResourceList from './components/ResourceList';
 import ResourceForm from './components/ResourceForm';
 import ResourceFilter from './components/ResourceFilter';
+import { useAuth } from '../../context/AuthContext';
 
 function ResourcesPage() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
+
   const [resources, setResources] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -90,7 +94,7 @@ function ResourcesPage() {
             Browse and manage all available campus resources including rooms, labs, and equipment.
           </p>
         </div>
-        {!showAddForm && (
+        {!showAddForm && isAdmin && (
           <button 
             onClick={() => { setEditingResource(null); setShowAddForm(true); }}
             style={{ padding: '10px 16px', backgroundColor: '#1a73e8', color: '#fff', border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer' }}
@@ -133,7 +137,7 @@ function ResourcesPage() {
           <span style={{ fontSize: '16px', fontWeight: '500' }}>Loading resources...</span>
         </div>
       ) : (
-        <ResourceList resources={resources} onEdit={handleEditClick} onDelete={handleDeleteClick} />
+        <ResourceList resources={resources} onEdit={handleEditClick} onDelete={handleDeleteClick} isAdmin={isAdmin} />
       )}
     </section>
   );

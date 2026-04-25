@@ -58,8 +58,8 @@ const moduleLinks = [
   // General section
   { to: "/dashboard", label: "Dashboard", icon: "dashboard", section: "General" },
   { to: "/profile", label: "My Profile", icon: "profile", section: "General" },
-  { to: "/security", label: "Account Security", icon: "security", section: "General" },
   { to: "/notifications", label: "Notifications", icon: "notifications", section: "General" },
+  { to: "/notifications/preferences", label: "Notification Settings", icon: "activity", section: "General" },
 
   // Services section
   { to: "/bookings", label: "Bookings", icon: "bookings", section: "Services" },
@@ -112,6 +112,7 @@ function Sidebar() {
                     `sidebar-link${isActive ? " active" : ""}`
                   }
                   to={link.to}
+                  end
                 >
                   {icons[link.icon]}
                   <span>{link.label}</span>

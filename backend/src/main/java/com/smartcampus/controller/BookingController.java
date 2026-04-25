@@ -30,7 +30,9 @@ public class BookingController {
 
     @GetMapping
     public List<Booking> getBookings() {
-        return bookingService.getAllBookings();
+        // Return only the current user's bookings; admins use /admin/all for full access
+        User currentUser = userService.getCurrentlyAuthenticatedUser();
+        return bookingService.getBookingsByUserId(currentUser.getId());
     }
 
     @GetMapping("/admin/all")

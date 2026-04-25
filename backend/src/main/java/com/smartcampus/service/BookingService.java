@@ -160,8 +160,8 @@ public class BookingService {
     public Booking cancelBooking(String id) {
         Booking booking = getBookingById(id);
 
-        if (booking.getStatus() != BookingStatus.APPROVED) {
-            throw new IllegalStateException("Only APPROVED bookings can be cancelled.");
+        if (booking.getStatus() != BookingStatus.APPROVED && booking.getStatus() != BookingStatus.PENDING) {
+            throw new IllegalStateException("Only PENDING or APPROVED bookings can be cancelled.");
         }
 
         booking.setStatus(BookingStatus.CANCELLED);

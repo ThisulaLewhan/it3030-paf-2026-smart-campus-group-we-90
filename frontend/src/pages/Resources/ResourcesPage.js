@@ -56,7 +56,6 @@ function ResourcesPage() {
   const handleEditClick = (resource) => {
     setEditingResource(resource);
     setShowAddForm(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleCancelForm = () => {
@@ -112,16 +111,27 @@ function ResourcesPage() {
       )}
 
       {showAddForm && (
-        <ResourceForm 
-          initialData={editingResource}
-          onResourceSaved={handleResourceSaved} 
-          onCancel={handleCancelForm} 
-        />
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000,
+          padding: '20px'
+        }}>
+          <div style={{ width: '100%', maxWidth: '800px', maxHeight: '90vh', overflowY: 'auto', borderRadius: '8px' }}>
+            <ResourceForm 
+              initialData={editingResource}
+              onResourceSaved={handleResourceSaved} 
+              onCancel={handleCancelForm} 
+            />
+          </div>
+        </div>
       )}
 
-      {!showAddForm && (
-        <ResourceFilter onSearch={handleSearch} onClear={handleClearFilters} />
-      )}
+      <ResourceFilter onSearch={handleSearch} onClear={handleClearFilters} />
 
       {loading ? (
         <div style={{ textAlign: 'center', padding: '80px 20px', color: '#64748b', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>

@@ -50,13 +50,23 @@ public class TicketController {
     // ---- Basic ticket CRUD ---- //
 
     @GetMapping
-    public List<Ticket> getTickets() {
-        return ticketService.getAllTickets();
+    public List<Ticket> getTickets(Authentication auth) {
+        String callerEmail = auth.getName();
+        String callerRole = auth.getAuthorities().stream()
+                .map(a -> a.getAuthority())
+                .findFirst()
+                .orElse("ROLE_USER");
+        return ticketService.getAllTickets(callerEmail, callerRole);
     }
 
     @GetMapping("/{id}")
-    public Ticket getTicket(@PathVariable String id) {
-        return ticketService.getTicketById(id);
+    public Ticket getTicket(@PathVariable String id, Authentication auth) {
+        String callerEmail = auth.getName();
+        String callerRole = auth.getAuthorities().stream()
+                .map(a -> a.getAuthority())
+                .findFirst()
+                .orElse("ROLE_USER");
+        return ticketService.getTicketById(id, callerEmail, callerRole);
     }
 
     /**

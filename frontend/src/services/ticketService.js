@@ -28,6 +28,13 @@ const ticketService = {
   editComment: (id, commentId, content) =>
     api.put(`${endpoint}/${id}/comments/${commentId}`, { content }),
   deleteComment: (id, commentId) => api.delete(`${endpoint}/${id}/comments/${commentId}`),
+
+  // ── /api/tickets module (distinct from /api/incident-tickets) ──────────
+  getTickets: () => api.get("/tickets"),
+  getTicketDetail: (id) => api.get(`/tickets/${id}`),
+  updateTicketStatus: (id, payload) => api.patch(`/tickets/${id}/status`, payload),
+  assignTicketTechnician: (id, technicianId) =>
+    api.patch(`/tickets/${id}/assign`, { technicianId }),
 };
 
 export default ticketService;

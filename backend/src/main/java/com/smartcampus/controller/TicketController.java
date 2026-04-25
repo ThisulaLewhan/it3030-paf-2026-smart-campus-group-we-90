@@ -1,6 +1,7 @@
 package com.smartcampus.controller;
 
 import com.smartcampus.dto.CommentDTO;
+import com.smartcampus.dto.TicketAssignDTO;
 import com.smartcampus.dto.TicketCreateDTO;
 import com.smartcampus.dto.TicketStatusUpdateDTO;
 import com.smartcampus.entity.Attachment;
@@ -136,6 +137,53 @@ public class TicketController {
                 .orElse("ROLE_USER");
 
         return ticketService.transitionStatus(id, dto, auth.getName(), requesterRole);
+    }
+
+    /**
+     * PATCH /api/tickets/{id}/assign
+     * Admin only. Assigns (or reassigns) a technician to the ticket.
+     *
+     * Request body: { "technicianId": "<userId>" }
+     *
+     * Rules:
+     *   - Only ADMIN may call this endpoint                     → 403 Forbidden for others
+     *   - Ticket must exist                                     → 404 Not Found
+     *   - Provided userId must exist                            → 404 Not Found
+     *   - Provided user must have TECHNICIAN or ADMIN role      → 400 Bad Request
+     *   - If ticket already has an assignee, reassignment is allowed (overwrite)
+     *
+     * Returns 200 OK with the updated ticket (assignedTechnician = email, assignedTo = name).
+     * Triggers an INFO notification to the assigned technician.
+     */
+    @PatchMapping("/{id}/assign")
+    public ResponseEntity<Object> assignTechnician(
+            @PathVariable String id,
+            @RequestBody TicketAssignDTO dto,
+            Authentication auth) {
+
+        if (auth == null || !auth.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        if (!isAdmin) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Only ADMIN can assign a technician to a ticket.");
+        }
+
+        if (dto.getTechnicianId() == null || dto.getTechnicianId().isBlank()) {
+            return ResponseEntity.badRequest().body("technicianId must not be blank.");
+        }
+
+        try {
+            Ticket updated = ticketService.assignTechnician(id, dto);
+            return ResponseEntity.ok(updated);
+        } catch (com.smartcampus.exception.ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     // ---- Comment endpoints ---- //

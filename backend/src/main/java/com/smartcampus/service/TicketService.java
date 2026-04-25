@@ -1,10 +1,16 @@
 package com.smartcampus.service;
 
+import com.smartcampus.dto.TicketAssignDTO;
 import com.smartcampus.dto.TicketCreateDTO;
 import com.smartcampus.dto.TicketStatusUpdateDTO;
+import com.smartcampus.entity.NotificationType;
+import com.smartcampus.entity.Role;
 import com.smartcampus.entity.Ticket;
+import com.smartcampus.entity.User;
 import com.smartcampus.exception.ForbiddenException;
+import com.smartcampus.exception.ResourceNotFoundException;
 import com.smartcampus.repository.TicketRepository;
+import com.smartcampus.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.EnumMap;
 import java.util.List;
@@ -34,9 +40,15 @@ public class TicketService {
     // -------------------------------------------------------------------- //
 
     private final TicketRepository ticketRepository;
+    private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
-    public TicketService(TicketRepository ticketRepository) {
+    public TicketService(TicketRepository ticketRepository,
+                          UserRepository userRepository,
+                          NotificationService notificationService) {
         this.ticketRepository = ticketRepository;
+        this.userRepository = userRepository;
+        this.notificationService = notificationService;
     }
 
     public List<Ticket> getAllTickets() {
@@ -93,6 +105,50 @@ public class TicketService {
         ticket.setUpdatedAt(now);
 
         return ticketRepository.save(ticket);
+    }
+
+    /**
+     * PATCH /api/tickets/{id}/assign — Admin only.
+     * Assigns (or reassigns) a technician to the ticket.
+     *
+     * Validations:
+     *   - Ticket must exist                          → 404 via ResourceNotFoundException
+     *   - Provided technicianId must exist           → 404 via ResourceNotFoundException
+     *   - Provided user must be TECHNICIAN or ADMIN  → 400 via IllegalArgumentException
+     *
+     * Side-effect: fires an INFO notification to the assigned technician.
+     *
+     * @param id    ticket id
+     * @param dto   contains technicianId
+     * @return updated ticket (includes assignedTechnician name + email)
+     */
+    public Ticket assignTechnician(String id, TicketAssignDTO dto) {
+        Ticket ticket = ticketRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket not found: " + id));
+
+        User technician = userRepository.findById(dto.getTechnicianId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "User not found: " + dto.getTechnicianId()));
+
+        if (technician.getRole() == Role.USER) {
+            throw new IllegalArgumentException(
+                    "User '" + technician.getEmail() + "' has role USER and cannot be assigned as a technician.");
+        }
+
+        // Assign (overwrite any existing assignee)
+        ticket.setAssignedTechnician(technician.getEmail());
+        ticket.setAssignedTo(technician.getName());
+        ticket.setUpdatedAt(LocalDateTime.now());
+        Ticket saved = ticketRepository.save(ticket);
+
+        // Notify the technician — coordinate with Module D teammate for preference-aware delivery
+        notificationService.createNotification(
+                technician,
+                "You have been assigned to ticket: " + ticket.getTitle(),
+                NotificationType.INFO
+        );
+
+        return saved;
     }
 
     public Ticket updateTicket(String id, Ticket updatedTicket) {

@@ -502,7 +502,7 @@ function TicketDetailPage() {
         </dl>
       </div>
 
-      {/* ── Admin: Assign Technician (always visible to ADMIN) ── */}
+      {/* ── Admin: Assign Technician (only when ticket is OPEN) ── */}
       {isAdmin && (
         <div className="page-card detail-card">
           <h2>Assign Technician</h2>
@@ -514,11 +514,18 @@ function TicketDetailPage() {
                 : <em>Not assigned yet</em>}
             </dd>
           </dl>
-          <div className="control-group" style={{ marginTop: "0.75rem" }}>
-            <button className="btn btn-primary" onClick={openAssignModal}>
-              {ticket.assignedTechnician ? "Reassign Technician" : "Assign Technician"}
-            </button>
-          </div>
+          {ticket.status === "OPEN" && (
+            <div className="control-group" style={{ marginTop: "0.75rem" }}>
+              <button className="btn btn-primary" onClick={openAssignModal}>
+                {ticket.assignedTechnician ? "Reassign Technician" : "Assign Technician"}
+              </button>
+            </div>
+          )}
+          {ticket.status !== "OPEN" && ticket.assignedTechnician && (
+            <p className="state-msg" style={{ margin: "0.5rem 0 0", padding: 0, fontSize: "0.85rem", color: "#718096" }}>
+              Technician cannot be changed once the ticket is in progress.
+            </p>
+          )}
 
           {/* Reject sub-section — only when ticket is OPEN */}
           {ticket.status === "OPEN" && (

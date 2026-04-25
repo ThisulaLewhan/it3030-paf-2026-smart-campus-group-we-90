@@ -160,6 +160,11 @@ public class TicketService {
         Ticket ticket = ticketRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket not found: " + id));
 
+        if (!"OPEN".equals(ticket.getStatus())) {
+            throw new ForbiddenException(
+                    "Technician cannot be changed once the ticket is in '" + ticket.getStatus() + "' status.");
+        }
+
         User technician = userRepository.findById(technicianId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "User not found: " + technicianId));

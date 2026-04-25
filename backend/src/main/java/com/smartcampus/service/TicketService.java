@@ -1,6 +1,5 @@
 package com.smartcampus.service;
 
-import com.smartcampus.dto.TicketAssignDTO;
 import com.smartcampus.dto.TicketCreateDTO;
 import com.smartcampus.dto.TicketStatusUpdateDTO;
 import com.smartcampus.entity.NotificationType;
@@ -52,12 +51,10 @@ public class TicketService {
         this.notificationService = notificationService;
     }
 
-    /**
-     * GET /api/tickets — role-filtered list.
-     * ADMIN  → all tickets
-     * USER   → only tickets where createdBy == callerEmail
-     * TECHNICIAN → only tickets where assignedTechnician == callerEmail
-     */
+    public List<Ticket> getAllTickets() {
+        return ticketRepository.findAll();
+    }
+
     public List<Ticket> getAllTickets(String callerEmail, String callerRole) {
         List<Ticket> all = ticketRepository.findAll();
         if ("ROLE_ADMIN".equals(callerRole)) {
@@ -68,34 +65,25 @@ public class TicketService {
                     .filter(t -> callerEmail.equals(t.getAssignedTechnician()))
                     .collect(Collectors.toList());
         }
-        // Default: ROLE_USER — only tickets the caller created
         return all.stream()
                 .filter(t -> callerEmail.equals(t.getCreatedBy()))
                 .collect(Collectors.toList());
     }
 
-    /**
-     * GET /api/tickets/{id} — role-guarded single ticket.
-     * Throws ResourceNotFoundException (→ 404) if the ticket does not exist.
-     * Throws ForbiddenException (→ 403) if the caller is not authorised to view it:
-     *   USER       → must be the ticket creator
-     *   TECHNICIAN → must be the assigned technician
-     *   ADMIN      → always authorised
-     */
-    public Ticket getTicketById(String id, String callerEmail, String callerRole) {
-        Ticket ticket = ticketRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Ticket not found: " + id));
+    public Ticket getTicketById(String id) {
+        return ticketRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Ticket not found: " + id));
+    }
 
-        if ("ROLE_ADMIN".equals(callerRole)) {
-            return ticket;
-        }
+    public Ticket getTicketById(String id, String callerEmail, String callerRole) {
+        Ticket ticket = getTicketById(id);
+        if ("ROLE_ADMIN".equals(callerRole)) return ticket;
         if ("ROLE_TECHNICIAN".equals(callerRole)) {
             if (!callerEmail.equals(ticket.getAssignedTechnician())) {
                 throw new ForbiddenException("You are not assigned to this ticket.");
             }
             return ticket;
         }
-        // ROLE_USER (default)
         if (!callerEmail.equals(ticket.getCreatedBy())) {
             throw new ForbiddenException("You did not create this ticket.");
         }
@@ -111,6 +99,10 @@ public class TicketService {
      * @return saved ticket (status always OPEN)
      * @throws IllegalArgumentException for missing required fields (→ 400)
      */
+    public Ticket createTicket(TicketCreateDTO dto, String creatorEmail, String creatorRole) {
+        return createTicket(dto, creatorEmail);
+    }
+
     public Ticket createTicket(TicketCreateDTO dto, String creatorEmail) {
         // Validate required fields
         if (dto.getTitle() == null || dto.getTitle().isBlank()) {
@@ -164,13 +156,13 @@ public class TicketService {
      * @param dto   contains technicianId
      * @return updated ticket (includes assignedTechnician name + email)
      */
-    public Ticket assignTechnician(String id, TicketAssignDTO dto) {
+    public Ticket assignTechnician(String id, String technicianId) {
         Ticket ticket = ticketRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket not found: " + id));
 
-        User technician = userRepository.findById(dto.getTechnicianId())
+        User technician = userRepository.findById(technicianId)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "User not found: " + dto.getTechnicianId()));
+                        "User not found: " + technicianId));
 
         if (technician.getRole() == Role.USER) {
             throw new IllegalArgumentException(

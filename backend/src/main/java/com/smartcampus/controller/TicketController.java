@@ -1,18 +1,20 @@
 package com.smartcampus.controller;
 
 import com.smartcampus.dto.CommentDTO;
-import com.smartcampus.dto.TicketAssignDTO;
 import com.smartcampus.dto.TicketCreateDTO;
 import com.smartcampus.dto.TicketStatusUpdateDTO;
 import com.smartcampus.entity.Attachment;
 import com.smartcampus.entity.Ticket;
 import com.smartcampus.entity.TicketComment;
+import com.smartcampus.exception.ForbiddenException;
+import com.smartcampus.exception.ResourceNotFoundException;
 import com.smartcampus.service.AttachmentService;
 import com.smartcampus.service.TicketCommentService;
 import com.smartcampus.service.TicketService;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -71,24 +73,7 @@ public class TicketController {
         return ticketService.getTicketById(id, callerEmail, callerRole);
     }
 
-    /**
-     * POST /api/tickets  (multipart/form-data)
-     * Any authenticated user (USER, ADMIN, TECHNICIAN) can create a ticket.
-     *
-     * Parts:
-     *   - "ticket"  (application/json, required)  — TicketCreateDTO fields
-     *   - "files"   (binary, optional, up to 3)   — jpg/jpeg/png images, max 5 MB each
-     *
-     * Rules enforced:
-     *   - Status is always set to OPEN — never accepted from the client
-     *   - createdBy is set from the JWT token, never from the request body
-     *   - assignedTechnicianId is ignored even if provided — use the assign endpoint instead
-     *
-     * Returns 201 Created on success.
-     * Returns 400 Bad Request for validation errors (missing required fields, file type/size).
-     * Returns 403 Forbidden if the caller is not authenticated.
-     */
-    @PostMapping(consumes = {"multipart/form-data"})
+    @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<Object> createTicket(
             @RequestPart("ticket") TicketCreateDTO dto,
             @RequestParam(value = "files", required = false) List<MultipartFile> files,
@@ -98,10 +83,14 @@ public class TicketController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        try {
-            Ticket ticket = ticketService.createTicket(dto, auth.getName());
+        String requesterRole = auth.getAuthorities().stream()
+                .map(a -> a.getAuthority())
+                .findFirst()
+                .orElse("ROLE_USER");
 
-            // Upload optional image attachments (max 3, jpg/jpeg/png, max 5 MB each)
+        try {
+            Ticket ticket = ticketService.createTicket(dto, auth.getName(), requesterRole);
+
             if (files != null && !files.isEmpty()) {
                 List<MultipartFile> nonEmpty = files.stream()
                         .filter(f -> f != null && !f.isEmpty())
@@ -112,8 +101,96 @@ public class TicketController {
             }
 
             return ResponseEntity.status(HttpStatus.CREATED).body(ticket);
+        } catch (ForbiddenException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("File storage error: " + e.getMessage());
+        }
+    }
+
+    @PatchMapping("/{id}/assign")
+    public ResponseEntity<Object> assignTechnician(
+            @PathVariable String id,
+            @RequestBody Map<String, String> body,
+            Authentication auth) {
+
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        if (!isAdmin) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Only ADMIN can assign a technician to a ticket.");
+        }
+
+        String technicianId = body.get("technicianId");
+        if (technicianId == null || technicianId.isBlank()) {
+            return ResponseEntity.badRequest().body("technicianId must not be blank.");
+        }
+
+        try {
+            Ticket updated = ticketService.assignTechnician(id, technicianId);
+            return ResponseEntity.ok(updated);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // ---- Attachment endpoints ---- //
+
+    @GetMapping("/{id}/attachments")
+    public ResponseEntity<Object> getAttachments(
+            @PathVariable String id,
+            Authentication auth) {
+
+        String callerEmail = auth.getName();
+        String callerRole = auth.getAuthorities().stream()
+                .map(a -> a.getAuthority())
+                .findFirst()
+                .orElse("ROLE_USER");
+
+        List<Attachment> attachments = attachmentService.getAttachmentsForTicket(id, callerEmail, callerRole);
+        return ResponseEntity.ok(attachments);
+    }
+
+    @GetMapping("/{id}/attachments/{attachmentId}")
+    public ResponseEntity<byte[]> streamAttachment(
+            @PathVariable String id,
+            @PathVariable String attachmentId,
+            Authentication auth) throws IOException {
+
+        String callerEmail = auth.getName();
+        String callerRole = auth.getAuthorities().stream()
+                .map(a -> a.getAuthority())
+                .findFirst()
+                .orElse("ROLE_USER");
+
+        AttachmentService.AttachmentDownloadResult result =
+                attachmentService.getAttachmentBytes(id, attachmentId, callerEmail, callerRole);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType(result.getContentType()));
+        headers.setContentDispositionFormData("inline", result.getFilename());
+
+        return ResponseEntity.ok().headers(headers).body(result.getBytes());
+    }
+
+    @PostMapping(value = "/{id}/attachments", consumes = "multipart/form-data")
+    public ResponseEntity<Object> uploadAttachments(
+            @PathVariable String id,
+            @RequestParam("files") List<MultipartFile> files,
+            Authentication auth) {
+
+        try {
+            List<Attachment> saved = attachmentService.uploadAttachmentsForTicket(id, files, auth.getName());
+            return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("File storage error: " + e.getMessage());
@@ -149,53 +226,6 @@ public class TicketController {
                 .orElse("ROLE_USER");
 
         return ticketService.transitionStatus(id, dto, auth.getName(), requesterRole);
-    }
-
-    /**
-     * PATCH /api/tickets/{id}/assign
-     * Admin only. Assigns (or reassigns) a technician to the ticket.
-     *
-     * Request body: { "technicianId": "<userId>" }
-     *
-     * Rules:
-     *   - Only ADMIN may call this endpoint                     → 403 Forbidden for others
-     *   - Ticket must exist                                     → 404 Not Found
-     *   - Provided userId must exist                            → 404 Not Found
-     *   - Provided user must have TECHNICIAN or ADMIN role      → 400 Bad Request
-     *   - If ticket already has an assignee, reassignment is allowed (overwrite)
-     *
-     * Returns 200 OK with the updated ticket (assignedTechnician = email, assignedTo = name).
-     * Triggers an INFO notification to the assigned technician.
-     */
-    @PatchMapping("/{id}/assign")
-    public ResponseEntity<Object> assignTechnician(
-            @PathVariable String id,
-            @RequestBody TicketAssignDTO dto,
-            Authentication auth) {
-
-        if (auth == null || !auth.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-
-        boolean isAdmin = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        if (!isAdmin) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("Only ADMIN can assign a technician to a ticket.");
-        }
-
-        if (dto.getTechnicianId() == null || dto.getTechnicianId().isBlank()) {
-            return ResponseEntity.badRequest().body("technicianId must not be blank.");
-        }
-
-        try {
-            Ticket updated = ticketService.assignTechnician(id, dto);
-            return ResponseEntity.ok(updated);
-        } catch (com.smartcampus.exception.ResourceNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
     }
 
     // ---- Comment endpoints ---- //
@@ -263,56 +293,5 @@ public class TicketController {
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
         commentService.deleteCommentFromTicket(id, commentId, auth.getName(), isAdmin);
-    }
-
-    // ---- Attachment endpoints ---- //
-
-    /**
-     * GET /api/tickets/{id}/attachments
-     * Returns metadata for all attachments on a ticket.
-     * Access: ADMIN (any), TECHNICIAN (assigned only), USER (own ticket only).
-     */
-    @GetMapping("/{id}/attachments")
-    public ResponseEntity<Object> getAttachments(
-            @PathVariable String id,
-            Authentication auth) {
-
-        String callerEmail = auth.getName();
-        String callerRole = auth.getAuthorities().stream()
-                .map(a -> a.getAuthority())
-                .findFirst()
-                .orElse("ROLE_USER");
-
-        List<Attachment> attachments = attachmentService.getAttachmentsForTicket(id, callerEmail, callerRole);
-        return ResponseEntity.ok(attachments);
-    }
-
-    /**
-     * GET /api/tickets/{id}/attachments/{attachmentId}
-     * Streams the raw image bytes with the correct Content-Type header.
-     * Access: same role rules as the list endpoint.
-     */
-    @GetMapping("/{id}/attachments/{attachmentId}")
-    public ResponseEntity<byte[]> streamAttachment(
-            @PathVariable String id,
-            @PathVariable String attachmentId,
-            Authentication auth) throws IOException {
-
-        String callerEmail = auth.getName();
-        String callerRole = auth.getAuthorities().stream()
-                .map(a -> a.getAuthority())
-                .findFirst()
-                .orElse("ROLE_USER");
-
-        AttachmentService.AttachmentDownloadResult result =
-                attachmentService.getAttachmentBytes(id, attachmentId, callerEmail, callerRole);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.parseMediaType(result.getContentType()));
-        headers.setContentDispositionFormData("inline", result.getFilename());
-
-        return ResponseEntity.ok()
-                .headers(headers)
-                .body(result.getBytes());
     }
 }

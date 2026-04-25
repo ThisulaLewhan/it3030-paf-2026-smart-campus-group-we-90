@@ -14,7 +14,9 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -105,7 +107,7 @@ public class TicketController {
                         .filter(f -> f != null && !f.isEmpty())
                         .collect(Collectors.toList());
                 if (!nonEmpty.isEmpty()) {
-                    attachmentService.uploadAttachmentsForTicket(ticket.getId(), nonEmpty);
+                    attachmentService.uploadAttachmentsForTicket(ticket.getId(), nonEmpty, auth.getName());
                 }
             }
 
@@ -261,5 +263,56 @@ public class TicketController {
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
         commentService.deleteCommentFromTicket(id, commentId, auth.getName(), isAdmin);
+    }
+
+    // ---- Attachment endpoints ---- //
+
+    /**
+     * GET /api/tickets/{id}/attachments
+     * Returns metadata for all attachments on a ticket.
+     * Access: ADMIN (any), TECHNICIAN (assigned only), USER (own ticket only).
+     */
+    @GetMapping("/{id}/attachments")
+    public ResponseEntity<Object> getAttachments(
+            @PathVariable String id,
+            Authentication auth) {
+
+        String callerEmail = auth.getName();
+        String callerRole = auth.getAuthorities().stream()
+                .map(a -> a.getAuthority())
+                .findFirst()
+                .orElse("ROLE_USER");
+
+        List<Attachment> attachments = attachmentService.getAttachmentsForTicket(id, callerEmail, callerRole);
+        return ResponseEntity.ok(attachments);
+    }
+
+    /**
+     * GET /api/tickets/{id}/attachments/{attachmentId}
+     * Streams the raw image bytes with the correct Content-Type header.
+     * Access: same role rules as the list endpoint.
+     */
+    @GetMapping("/{id}/attachments/{attachmentId}")
+    public ResponseEntity<byte[]> streamAttachment(
+            @PathVariable String id,
+            @PathVariable String attachmentId,
+            Authentication auth) throws IOException {
+
+        String callerEmail = auth.getName();
+        String callerRole = auth.getAuthorities().stream()
+                .map(a -> a.getAuthority())
+                .findFirst()
+                .orElse("ROLE_USER");
+
+        AttachmentService.AttachmentDownloadResult result =
+                attachmentService.getAttachmentBytes(id, attachmentId, callerEmail, callerRole);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType(result.getContentType()));
+        headers.setContentDispositionFormData("inline", result.getFilename());
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(result.getBytes());
     }
 }

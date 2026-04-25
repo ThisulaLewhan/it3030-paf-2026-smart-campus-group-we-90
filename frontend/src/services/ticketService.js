@@ -46,6 +46,21 @@ const ticketService = {
     api.put(`/tickets/${id}/comments/${commentId}`, { content }),
   deleteTicketComment: (id, commentId) =>
     api.delete(`/tickets/${id}/comments/${commentId}`),
+
+  /**
+   * Unified ticket creation — sends ticket JSON + optional images in one multipart request.
+   * The caller should build a FormData with:
+   *   formData.append("ticket", new Blob([JSON.stringify(payload)], { type: "application/json" }))
+   *   formData.append("files", file) for each image
+   */
+  createNewTicket: (formData) =>
+    api.post("/tickets", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }),
+
+  /** Fetches a single attachment's raw bytes as a Blob (for thumbnail / lightbox display). */
+  getAttachmentImageBlob: (ticketId, attachmentId) =>
+    api.get(`/tickets/${ticketId}/attachments/${attachmentId}`, { responseType: "blob" }),
 };
 
 export default ticketService;

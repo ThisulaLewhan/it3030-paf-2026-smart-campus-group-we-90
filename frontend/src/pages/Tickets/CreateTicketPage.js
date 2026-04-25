@@ -135,7 +135,8 @@ function CreateTicketPage() {
 
     setSubmitting(true);
     try {
-      // 1. Create the ticket
+      // Build a single multipart request combining ticket JSON + optional images
+      const formData = new FormData();
       const payload = {
         title: form.title.trim(),
         category: form.category,
@@ -146,15 +147,14 @@ function CreateTicketPage() {
         preferredContact: form.preferredContact.trim() || undefined,
         assignedTechnicianId: assignedTechnicianId || null,
       };
-      const res = await ticketService.create(payload);
-      const ticketId = res.data.id;
+      formData.append(
+        "ticket",
+        new Blob([JSON.stringify(payload)], { type: "application/json" })
+      );
+      images.forEach(({ file }) => formData.append("files", file));
 
-      // 2. Upload images if any
-      if (images.length > 0) {
-        const formData = new FormData();
-        images.forEach(({ file }) => formData.append("files", file));
-        await ticketService.uploadAttachments(ticketId, formData);
-      }
+      const res = await ticketService.createNewTicket(formData);
+      const ticketId = res.data.id;
 
       // Clean up object URLs
       images.forEach(({ preview }) => URL.revokeObjectURL(preview));
@@ -343,7 +343,12 @@ function CreateTicketPage() {
                   >
                     ✕
                   </button>
-                  <span className="image-name">{file.name}</span>
+                  <span className="image-name">
+                    {file.name}{" "}
+                    <span className="image-size">
+                      ({(file.size / 1024).toFixed(0)} KB)
+                    </span>
+                  </span>
                 </div>
               ))}
             </div>

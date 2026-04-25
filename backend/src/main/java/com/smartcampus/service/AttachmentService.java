@@ -1,6 +1,9 @@
 package com.smartcampus.service;
 
 import com.smartcampus.entity.Attachment;
+import com.smartcampus.entity.Ticket;
+import com.smartcampus.exception.ForbiddenException;
+import com.smartcampus.exception.ResourceNotFoundException;
 import com.smartcampus.repository.AttachmentRepository;
 import com.smartcampus.repository.IncidentTicketRepository;
 import com.smartcampus.repository.TicketRepository;
@@ -102,12 +105,14 @@ public class AttachmentService {
     /**
      * Uploads image attachments for a regular ticket (/api/tickets).
      * Validates: max 3 total per ticket, jpg/jpeg/png only, max 5 MB each.
+     * Files are stored under {uploadDir}/tickets/{ticketId}/.
      *
      * @throws NoSuchElementException   if the ticket does not exist
      * @throws IllegalArgumentException if count/type/size validation fails
      * @throws IOException              on file storage errors
      */
-    public List<Attachment> uploadAttachmentsForTicket(String ticketId, List<MultipartFile> files)
+    public List<Attachment> uploadAttachmentsForTicket(String ticketId, List<MultipartFile> files,
+                                                        String uploadedBy)
             throws IOException {
 
         ticketRepository.findById(ticketId)
@@ -124,7 +129,8 @@ public class AttachmentService {
             validateFile(file);
         }
 
-        Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+        // Store under a per-ticket subdirectory to keep uploads organised
+        Path uploadPath = Paths.get(uploadDir, "tickets", ticketId).toAbsolutePath().normalize();
         Files.createDirectories(uploadPath);
 
         List<Attachment> saved = new java.util.ArrayList<>();
@@ -142,9 +148,93 @@ public class AttachmentService {
             attachment.setContentType(file.getContentType());
             attachment.setSizeBytes(file.getSize());
             attachment.setUploadedAt(LocalDateTime.now());
+            attachment.setUploadedBy(uploadedBy);
             saved.add(attachmentRepository.save(attachment));
         }
         return saved;
+    }
+
+    /**
+     * Returns attachments for a ticket, enforcing role-based access:
+     * ADMIN → any ticket; TECHNICIAN → assigned tickets only; USER → own tickets only.
+     */
+    public List<Attachment> getAttachmentsForTicket(String ticketId, String callerEmail,
+                                                     String callerRole) {
+        checkTicketAccess(ticketId, callerEmail, callerRole);
+        return attachmentRepository.findByTicketId(ticketId);
+    }
+
+    /**
+     * Validates access and returns the raw bytes of a single attachment together with
+     * its MIME type so the controller can set the correct Content-Type header.
+     */
+    public AttachmentDownloadResult getAttachmentBytes(String ticketId, String attachmentId,
+                                                        String callerEmail, String callerRole)
+            throws IOException {
+        checkTicketAccess(ticketId, callerEmail, callerRole);
+
+        Attachment attachment = attachmentRepository.findById(attachmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Attachment not found: " + attachmentId));
+
+        if (!ticketId.equals(attachment.getTicketId())) {
+            throw new ResourceNotFoundException("Attachment " + attachmentId
+                    + " does not belong to ticket " + ticketId);
+        }
+
+        Path filePath = Paths.get(attachment.getStoredPath());
+        if (!Files.exists(filePath)) {
+            throw new ResourceNotFoundException("Attachment file not found on disk: " + attachmentId);
+        }
+
+        byte[] bytes = Files.readAllBytes(filePath);
+        return new AttachmentDownloadResult(attachment.getContentType(), attachment.getFilename(), bytes);
+    }
+
+    // ── Inner result type ─────────────────────────────────────────────────────
+
+    public static class AttachmentDownloadResult {
+        private final String contentType;
+        private final String filename;
+        private final byte[] bytes;
+
+        public AttachmentDownloadResult(String contentType, String filename, byte[] bytes) {
+            this.contentType = contentType;
+            this.filename = filename;
+            this.bytes = bytes;
+        }
+
+        public String getContentType() { return contentType; }
+        public String getFilename()    { return filename; }
+        public byte[] getBytes()       { return bytes; }
+    }
+
+    // ── Private helpers ───────────────────────────────────────────────────────
+
+    /**
+     * Checks that callerEmail is permitted to access attachments for the given ticket.
+     * Throws ResourceNotFoundException (404) if the ticket doesn't exist,
+     * ForbiddenException (403) if the caller lacks access.
+     */
+    private void checkTicketAccess(String ticketId, String callerEmail, String callerRole) {
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket not found: " + ticketId));
+
+        if ("ROLE_ADMIN".equals(callerRole)) {
+            return; // admins can access all tickets
+        }
+
+        if ("ROLE_TECHNICIAN".equals(callerRole)) {
+            String assigned = ticket.getAssignedTechnician();
+            if (assigned == null || !assigned.equals(callerEmail)) {
+                throw new ForbiddenException("You are not assigned to this ticket.");
+            }
+            return;
+        }
+
+        // ROLE_USER — must be the ticket creator
+        if (!callerEmail.equals(ticket.getCreatedBy())) {
+            throw new ForbiddenException("You are not the owner of this ticket.");
+        }
     }
 
     private void validateFile(MultipartFile file) {

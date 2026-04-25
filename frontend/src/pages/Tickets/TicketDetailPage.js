@@ -65,13 +65,22 @@ function TicketDetailPage() {
   const fileInputRef = useRef(null);
   const [uploadMsg, setUploadMsg] = useState("");
 
+  // Attachment blob URLs for thumbnail/lightbox display
+  const [blobUrls, setBlobUrls] = useState({});
+  const [loadingBlobs, setLoadingBlobs] = useState(false);
+  const [lightbox, setLightbox] = useState(null); // { url, filename } | null
+
   const loadAll = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
+      // Only ADMIN / TECHNICIAN may see attachments — skip the fetch for USER to avoid 403
+      const shouldFetchAttachments = role === "ADMIN" || role === "TECHNICIAN";
       const [ticketRes, attachRes, commRes] = await Promise.all([
         ticketService.getTicketDetail(id),
-        ticketService.getTicketAttachments(id),
+        shouldFetchAttachments
+          ? ticketService.getTicketAttachments(id).catch(() => ({ data: [] }))
+          : Promise.resolve({ data: [] }),
         ticketService.getTicketComments(id),
       ]);
       setTicket(ticketRes.data);
@@ -82,7 +91,7 @@ function TicketDetailPage() {
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, role]);
 
   useEffect(() => { loadAll(); }, [loadAll]);
 
@@ -92,6 +101,41 @@ function TicketDetailPage() {
       .then((res) => setTechnicians(res.data))
       .catch(() => setTechnicians([]));
   }, [role]);
+
+  // Fetch raw image bytes for thumbnails/lightbox once ticket + attachments are loaded
+  useEffect(() => {
+    if (!ticket || attachments.length === 0) return;
+    const canView =
+      role === "ADMIN" ||
+      (role === "TECHNICIAN" && ticket.assignedTechnician === userEmail);
+    if (!canView) return;
+
+    let cancelled = false;
+    setLoadingBlobs(true);
+
+    (async () => {
+      const urls = {};
+      await Promise.all(
+        attachments.map(async (a) => {
+          try {
+            const res = await ticketService.getAttachmentImageBlob(id, a.id);
+            if (!cancelled) urls[a.id] = URL.createObjectURL(res.data);
+          } catch { /* skip blobs that fail to load */ }
+        })
+      );
+      if (!cancelled) {
+        setBlobUrls(urls);
+        setLoadingBlobs(false);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [ticket, attachments, role, userEmail, id]);
+
+  // Revoke stale blob URLs to avoid memory leaks
+  useEffect(() => {
+    return () => { Object.values(blobUrls).forEach(URL.revokeObjectURL); };
+  }, [blobUrls]);
 
   // ── Status update ─────────────────────────────────────────────────────────
   async function handleStatusAdvance() {
@@ -221,6 +265,7 @@ function TicketDetailPage() {
   const isAdmin      = role === "ADMIN";
   const isTechnician = role === "TECHNICIAN";
   const canAdvanceStatus = isAdmin || isTechnician;
+  const canViewAttachments = isAdmin || (isTechnician && ticket.assignedTechnician === userEmail);
   const allowedNextStatuses = ticket
     ? (isAdmin ? ADMIN_TRANSITIONS[ticket.status] ?? [] : TECH_TRANSITIONS[ticket.status] ?? [])
     : [];
@@ -373,40 +418,40 @@ function TicketDetailPage() {
         </div>
       )}
 
-      {/* ── Attachments ── */}
-      <div className="page-card detail-card">
-        <h2>Attachments ({attachments.length}/3)</h2>
-        {attachments.length === 0 && <p className="state-msg">No attachments.</p>}
-        <ul className="attachment-list">
-          {attachments.map((a) => (
-            <li key={a.id} className="attachment-item">
-              <span className="attachment-icon">🖼</span>
-              <span>{a.filename}</span>
-              <span className="attachment-meta">
-                {(a.sizeBytes / 1024).toFixed(1)} KB ·{" "}
-                {a.uploadedAt ? new Date(a.uploadedAt).toLocaleDateString() : ""}
-              </span>
-            </li>
-          ))}
-        </ul>
-        {attachments.length < 3 && (
-          <div className="upload-area">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/png"
-              multiple
-              onChange={handleUpload}
-              style={{ display: "none" }}
-              id="file-upload"
-            />
-            <label htmlFor="file-upload" className="btn btn-secondary">
-              Upload Images
-            </label>
-            {uploadMsg && <p className="form-msg">{uploadMsg}</p>}
-          </div>
-        )}
-      </div>
+      {/* ── Attachments (ADMIN / assigned TECHNICIAN only) ── */}
+      {canViewAttachments && (
+        <div className="page-card detail-card">
+          <h2>Attachments ({attachments.length}/3)</h2>
+          {loadingBlobs && <p className="state-msg">Loading images…</p>}
+          {!loadingBlobs && attachments.length === 0 && (
+            <p className="state-msg">No attachments on this ticket.</p>
+          )}
+          {!loadingBlobs && attachments.length > 0 && (
+            <div className="attachment-thumbnail-grid">
+              {attachments.map((a) => (
+                <button
+                  key={a.id}
+                  type="button"
+                  className="attachment-thumb-btn"
+                  onClick={() => setLightbox({ url: blobUrls[a.id], filename: a.filename })}
+                  disabled={!blobUrls[a.id]}
+                  title={`${a.filename} (${(a.sizeBytes / 1024).toFixed(1)} KB)`}
+                >
+                  {blobUrls[a.id] ? (
+                    <img src={blobUrls[a.id]} alt={a.filename} className="attachment-thumb" />
+                  ) : (
+                    <span className="attachment-thumb-placeholder">🖼</span>
+                  )}
+                  <span className="attachment-thumb-name">{a.filename}</span>
+                  <span className="attachment-thumb-meta">
+                    {(a.sizeBytes / 1024).toFixed(1)} KB
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ── Comments ── */}
       <div className="page-card detail-card">
@@ -494,6 +539,35 @@ function TicketDetailPage() {
           </button>
         </form>
       </div>
+      {/* ── Image lightbox ── */}
+      {lightbox && (
+        <div
+          className="modal-overlay"
+          onClick={() => setLightbox(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Image preview: ${lightbox.filename}`}
+        >
+          <div className="modal-box lightbox-box" onClick={(e) => e.stopPropagation()}>
+            <div className="lightbox-header">
+              <span className="lightbox-filename">{lightbox.filename}</span>
+              <button
+                className="detail-toast-close lightbox-close"
+                onClick={() => setLightbox(null)}
+                aria-label="Close image preview"
+              >
+                ✕
+              </button>
+            </div>
+            {lightbox.url ? (
+              <img src={lightbox.url} alt={lightbox.filename} className="lightbox-img" />
+            ) : (
+              <p className="state-msg">Image not available.</p>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* ── Assign technician modal (ADMIN) ── */}
       {assignModalOpen && (
         <div className="modal-overlay" onClick={() => setAssignModalOpen(false)}>

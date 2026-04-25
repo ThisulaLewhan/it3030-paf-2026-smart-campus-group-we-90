@@ -39,10 +39,13 @@ public class TicketService {
 
     private final TicketRepository ticketRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
-    public TicketService(TicketRepository ticketRepository, UserRepository userRepository) {
+    public TicketService(TicketRepository ticketRepository, UserRepository userRepository,
+                         NotificationService notificationService) {
         this.ticketRepository = ticketRepository;
         this.userRepository = userRepository;
+        this.notificationService = notificationService;
     }
 
     public List<Ticket> getAllTickets() {
@@ -209,7 +212,15 @@ public class TicketService {
 
         ticket.setStatus(next.name());
         ticket.setUpdatedAt(LocalDateTime.now());
-        return ticketRepository.save(ticket);
+        Ticket saved = ticketRepository.save(ticket);
+
+        // Notify the ticket creator about the status change
+        if (ticket.getCreatedBy() != null) {
+            userRepository.findByEmail(ticket.getCreatedBy()).ifPresent(ticketOwner ->
+                notificationService.notifyTicketStatusUpdate(ticketOwner, ticket.getId(), next.name())
+            );
+        }
+
+        return saved;
     }
 }
-

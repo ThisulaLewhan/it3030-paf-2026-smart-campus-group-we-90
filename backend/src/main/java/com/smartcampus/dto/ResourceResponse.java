@@ -8,7 +8,7 @@ import java.time.LocalTime;
 
 public class ResourceResponse {
 
-    private Long id;
+    private String id;
     private String name;
     private ResourceType type;
     private Integer capacity;
@@ -34,7 +34,7 @@ public class ResourceResponse {
 
     // ── Getters ───────────────────────────────────────────────────────────────
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 

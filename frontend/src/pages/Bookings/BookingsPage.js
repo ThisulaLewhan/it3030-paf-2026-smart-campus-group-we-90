@@ -140,6 +140,14 @@ function BookingsPage() {
     return { total, approved, pending, cancelled };
   }, [bookings]);
 
+  // ── Resource name lookup map ──
+  const resourceMap = useMemo(() => {
+    const map = {};
+    resources.forEach(r => { map[r.id] = r.name; });
+    return map;
+  }, [resources]);
+
+  const getResourceName = (id) => resourceMap[id] || id;
   // ── Upcoming bookings (next 3 approved/pending) ──
   const upcoming = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
@@ -440,7 +448,7 @@ function BookingsPage() {
                             <CalendarIcon />
                           </div>
                           <div>
-                            <div className="bk-table-resource-name">{booking.resourceId}</div>
+                            <div className="bk-table-resource-name">{getResourceName(booking.resourceId)}</div>
                             {isAdmin && (
                               <div className="bk-table-resource-type">
                                 {booking.userName ? booking.userName : `User: ${booking.userId?.substring(0, 8)}...`}
@@ -511,7 +519,7 @@ function BookingsPage() {
                   <div key={b.id} className="bk-upcoming-item">
                     <div className="bk-upcoming-icon"><CalendarIcon /></div>
                     <div className="bk-upcoming-details">
-                      <div className="bk-upcoming-name">{b.resourceId}</div>
+                      <div className="bk-upcoming-name">{getResourceName(b.resourceId)}</div>
                       <div className="bk-upcoming-time">
                         {formatDate(b.date)} | {formatTime(b.startTime)} - {formatTime(b.endTime)}
                       </div>

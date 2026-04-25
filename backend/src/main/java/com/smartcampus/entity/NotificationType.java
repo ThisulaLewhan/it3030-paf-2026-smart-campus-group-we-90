@@ -4,5 +4,7 @@ public enum NotificationType {
     INFO,
     ALERT,
     WARNING,
-    SYSTEM
+    SYSTEM,
+    BOOKING,
+    TICKET
 }

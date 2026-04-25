@@ -88,9 +88,8 @@ public class NotificationService {
     public void notifyBookingStatusChange(User targetUser, String resourceName, String newStatus) {
         String message = String.format("Your booking for '%s' is now %s.", resourceName, newStatus.toUpperCase());
         
-        // Dynamically shift visual weight based on if it was rejected or approved
-        NotificationType type = newStatus.equalsIgnoreCase("REJECTED") ? NotificationType.WARNING : NotificationType.INFO;
-        createNotification(targetUser, message, type);
+        // Use BOOKING type for all booking-related notifications
+        createNotification(targetUser, message, NotificationType.BOOKING);
     }
 
     /**
@@ -99,17 +98,17 @@ public class NotificationService {
     public void notifyTicketStatusUpdate(User targetUser, String ticketId, String status) {
         String message = String.format("Update on Ticket #%s: Status is now %s.", ticketId, status);
         
-        // System alerts act as primary interceptors
-        createNotification(targetUser, message, NotificationType.ALERT);
+        // Use TICKET type for ticket status updates
+        createNotification(targetUser, message, NotificationType.TICKET);
     }
 
     /**
-     * Helper for Social/Forum Module: Dispatches an info ping when someone leaves a comment.
+     * Helper for Ticket Comment Module: Dispatches an info ping when someone leaves a comment.
      */
     public void notifyNewComment(User targetUser, String commenterName, String threadTitle) {
-        String message = String.format("%s replied to '%s'.", commenterName, threadTitle);
+        String message = String.format("%s commented on your ticket '%s'.", commenterName, threadTitle);
         
-        createNotification(targetUser, message, NotificationType.INFO);
+        createNotification(targetUser, message, NotificationType.TICKET);
     }
 
     /**

@@ -3,9 +3,10 @@ package com.smartcampus.service;
 import com.smartcampus.dto.BookingRequestDTO;
 import com.smartcampus.entity.Booking;
 import com.smartcampus.entity.BookingStatus;
-import com.smartcampus.repository.BookingRepository;
-import com.smartcampus.repository.UserRepository;
 import com.smartcampus.entity.User;
+import com.smartcampus.repository.BookingRepository;
+import com.smartcampus.repository.ResourceRepository;
+import com.smartcampus.repository.UserRepository;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
@@ -19,10 +20,15 @@ public class BookingService {
 
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
+    private final ResourceRepository resourceRepository;
+    private final NotificationService notificationService;
 
-    public BookingService(BookingRepository bookingRepository, UserRepository userRepository) {
+    public BookingService(BookingRepository bookingRepository, UserRepository userRepository,
+                          ResourceRepository resourceRepository, NotificationService notificationService) {
         this.bookingRepository = bookingRepository;
         this.userRepository = userRepository;
+        this.resourceRepository = resourceRepository;
+        this.notificationService = notificationService;
     }
 
     private Booking enrichWithUserDetails(Booking booking) {
@@ -114,7 +120,16 @@ public class BookingService {
         checkForConflicts(booking.getResourceId(), booking.getDate(), booking.getStartTime(), booking.getEndTime(), id);
         
         booking.setStatus(BookingStatus.APPROVED);
-        return bookingRepository.save(booking);
+        Booking saved = bookingRepository.save(booking);
+
+        // Notify the booking owner about approval
+        userRepository.findById(booking.getUserId()).ifPresent(user -> {
+            String resName = resourceRepository.findById(booking.getResourceId())
+                    .map(r -> r.getName()).orElse(booking.getResourceId());
+            notificationService.notifyBookingStatusChange(user, resName, "APPROVED");
+        });
+
+        return saved;
     }
 
     public Booking rejectBooking(String id, String reason) {
@@ -130,7 +145,16 @@ public class BookingService {
 
         booking.setStatus(BookingStatus.REJECTED);
         booking.setRejectionReason(reason);
-        return bookingRepository.save(booking);
+        Booking saved = bookingRepository.save(booking);
+
+        // Notify the booking owner about rejection
+        userRepository.findById(booking.getUserId()).ifPresent(user -> {
+            String resName = resourceRepository.findById(booking.getResourceId())
+                    .map(r -> r.getName()).orElse(booking.getResourceId());
+            notificationService.notifyBookingStatusChange(user, resName, "REJECTED");
+        });
+
+        return saved;
     }
 
     public Booking cancelBooking(String id) {
@@ -141,7 +165,16 @@ public class BookingService {
         }
 
         booking.setStatus(BookingStatus.CANCELLED);
-        return bookingRepository.save(booking);
+        Booking saved = bookingRepository.save(booking);
+
+        // Notify the booking owner about cancellation
+        userRepository.findById(booking.getUserId()).ifPresent(user -> {
+            String resName = resourceRepository.findById(booking.getResourceId())
+                    .map(r -> r.getName()).orElse(booking.getResourceId());
+            notificationService.notifyBookingStatusChange(user, resName, "CANCELLED");
+        });
+
+        return saved;
     }
 
     public void deleteBooking(String id) {

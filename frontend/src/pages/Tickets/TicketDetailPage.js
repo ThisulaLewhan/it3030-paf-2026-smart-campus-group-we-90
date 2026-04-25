@@ -265,7 +265,7 @@ function TicketDetailPage() {
   const isAdmin      = role === "ADMIN";
   const isTechnician = role === "TECHNICIAN";
   const canAdvanceStatus = isAdmin || isTechnician;
-  const canViewAttachments = isAdmin || (isTechnician && ticket.assignedTechnician === userEmail);
+  const canViewAttachments = isAdmin || (isTechnician && ticket?.assignedTechnician === userEmail);
   const allowedNextStatuses = ticket
     ? (isAdmin ? ADMIN_TRANSITIONS[ticket.status] ?? [] : TECH_TRANSITIONS[ticket.status] ?? [])
     : [];

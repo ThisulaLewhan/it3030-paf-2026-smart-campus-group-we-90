@@ -35,6 +35,17 @@ const ticketService = {
   updateTicketStatus: (id, payload) => api.patch(`/tickets/${id}/status`, payload),
   assignTicketTechnician: (id, technicianId) =>
     api.patch(`/tickets/${id}/assign`, { technicianId }),
+  getTicketAttachments: (id) => api.get(`/tickets/${id}/attachments`),
+  uploadTicketAttachments: (id, formData) =>
+    api.post(`/tickets/${id}/attachments`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }),
+  getTicketComments: (id) => api.get(`/tickets/${id}/comments`),
+  addTicketComment: (id, content) => api.post(`/tickets/${id}/comments`, { content }),
+  editTicketComment: (id, commentId, content) =>
+    api.put(`/tickets/${id}/comments/${commentId}`, { content }),
+  deleteTicketComment: (id, commentId) =>
+    api.delete(`/tickets/${id}/comments/${commentId}`),
 };
 
 export default ticketService;

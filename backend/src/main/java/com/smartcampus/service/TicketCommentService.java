@@ -112,7 +112,7 @@ public class TicketCommentService {
     // ------------------------------------------------------------------ //
 
     public TicketComment addComment(String ticketId, CommentDTO dto, String authorId) {
-        incidentTicketRepository.findById(ticketId)
+        com.smartcampus.entity.IncidentTicket ticket = incidentTicketRepository.findById(ticketId)
                 .orElseThrow(() -> new NoSuchElementException("Incident ticket not found: " + ticketId));
 
         LocalDateTime now = LocalDateTime.now();
@@ -123,7 +123,21 @@ public class TicketCommentService {
         comment.setCreatedAt(now);
         comment.setUpdatedAt(now);
 
-        return commentRepository.save(comment);
+        TicketComment saved = commentRepository.save(comment);
+
+        // Notify the ticket creator about the new comment (unless they wrote it themselves)
+        if (ticket.getCreatedBy() != null && !ticket.getCreatedBy().equals(authorId)) {
+            String commenterName = userRepository.findById(authorId)
+                    .map(u -> u.getName())
+                    .orElse(userRepository.findByEmail(authorId)
+                            .map(u -> u.getName())
+                            .orElse("Someone"));
+            userRepository.findByEmail(ticket.getCreatedBy()).ifPresent(ticketOwner ->
+                notificationService.notifyNewComment(ticketOwner, commenterName, ticket.getTitle())
+            );
+        }
+
+        return saved;
     }
 
     public List<TicketComment> getComments(String ticketId) {

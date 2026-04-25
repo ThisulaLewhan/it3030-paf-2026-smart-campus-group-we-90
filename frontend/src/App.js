@@ -16,7 +16,6 @@ import TicketDetailPage from "./pages/Tickets/TicketDetailPage";
 import TicketListPage from "./pages/Tickets/TicketListPage";
 import CreateTicketPage from "./pages/Tickets/CreateTicketPage";
 import ProtectedRoute from "./components/ProtectedRoute";
-import AccountSecurityPage from "./pages/Security/AccountSecurityPage";
 import AdminUsersPage from "./pages/Admin/AdminUsersPage";
 import Unauthorized from "./pages/Unauthorized";
 import ProfilePage from "./pages/Profile/ProfilePage";
@@ -42,7 +41,6 @@ function App() {
             <Route path="/" element={<MainLayout />}>
               <Route path="dashboard" element={<Home />} />
               <Route path="profile" element={<ProfilePage />} />
-              <Route path="security" element={<AccountSecurityPage />} />
               <Route
                 path="resources"
                 element={

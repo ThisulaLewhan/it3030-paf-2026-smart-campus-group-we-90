@@ -1,7 +1,7 @@
 import React from 'react';
 import ResourceCard from './ResourceCard';
 
-function ResourceList({ resources, onEdit, onDelete }) {
+function ResourceList({ resources, onEdit, onDelete, isAdmin }) {
   if (!resources || resources.length === 0) {
     return (
       <div style={{ padding: '60px 20px', textAlign: 'center', color: '#64748b', backgroundColor: '#f8fafc', borderRadius: '12px', border: '2px dashed #e2e8f0', marginTop: '20px' }}>
@@ -14,13 +14,13 @@ function ResourceList({ resources, onEdit, onDelete }) {
 
   return (
     <div style={{
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-      gap: '20px',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '12px',
       marginTop: '20px'
     }}>
       {resources.map(resource => (
-        <ResourceCard key={resource.id} resource={resource} onEdit={onEdit} onDelete={onDelete} />
+        <ResourceCard key={resource.id} resource={resource} onEdit={onEdit} onDelete={onDelete} isAdmin={isAdmin} />
       ))}
     </div>
   );

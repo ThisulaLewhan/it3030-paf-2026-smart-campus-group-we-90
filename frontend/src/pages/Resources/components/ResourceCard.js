@@ -1,6 +1,6 @@
 import React from 'react';
 
-function ResourceCard({ resource, onEdit, onDelete }) {
+function ResourceCard({ resource, onEdit, onDelete, isAdmin }) {
   // Utility for status color mapping
   const getStatusColor = (status) => {
     switch (status) {
@@ -17,84 +17,78 @@ function ResourceCard({ resource, onEdit, onDelete }) {
       style={{
         border: '1px solid #e2e8f0',
         borderRadius: '12px',
-        padding: '20px',
+        padding: '16px 20px',
         backgroundColor: '#fff',
-        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03)',
+        boxShadow: '0 1px 3px 0 rgba(0,0,0,0.05), 0 1px 2px 0 rgba(0,0,0,0.03)',
         display: 'flex',
-        flexDirection: 'column',
-        gap: '12px',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
         transition: 'transform 0.2s ease, box-shadow 0.2s ease'
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'translateY(-4px)';
+        e.currentTarget.style.transform = 'translateY(-2px)';
         e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)';
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.transform = 'none';
-        e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03)';
+        e.currentTarget.style.boxShadow = '0 1px 3px 0 rgba(0,0,0,0.05), 0 1px 2px 0 rgba(0,0,0,0.03)';
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <h3 style={{ margin: 0, fontSize: '18px', color: '#1e293b', fontWeight: '600' }}>{resource.name}</h3>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1 }}>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <h3 style={{ margin: 0, fontSize: '17px', color: '#1e293b', fontWeight: '600' }}>{resource.name}</h3>
           <span style={{
             backgroundColor: statusStyle.bg,
             color: statusStyle.text,
             border: `1px solid ${statusStyle.border}`,
-            padding: '4px 10px',
-            borderRadius: '16px',
-            fontSize: '12px',
+            padding: '2px 8px',
+            borderRadius: '12px',
+            fontSize: '11px',
             fontWeight: '600',
             letterSpacing: '0.02em'
           }}>
             {resource.status}
           </span>
         </div>
-      </div>
-      
-      <div style={{ color: '#475569', fontSize: '14px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-        <p style={{ margin: 0 }}>
-          <span style={{ color: '#94a3b8', display: 'inline-block', width: '70px' }}>Type:</span> 
-          <span style={{ fontWeight: '500' }}>{resource.type.replace('_', ' ')}</span>
-        </p>
-        <p style={{ margin: 0 }}>
-          <span style={{ color: '#94a3b8', display: 'inline-block', width: '70px' }}>Capacity:</span> 
-          <span style={{ fontWeight: '500' }}>{resource.capacity} people</span>
-        </p>
-        <p style={{ margin: 0 }}>
-          <span style={{ color: '#94a3b8', display: 'inline-block', width: '70px' }}>Location:</span> 
-          <span style={{ fontWeight: '500' }}>{resource.location}</span>
-        </p>
-        {(resource.availabilityStart || resource.availabilityEnd) && (
-          <p style={{ margin: 0 }}>
-            <span style={{ color: '#94a3b8', display: 'inline-block', width: '70px' }}>Available:</span> 
-            <span style={{ fontWeight: '500' }}>
-              {resource.availabilityStart ? resource.availabilityStart.substring(0, 5) : 'Any'} 
-              {' - '} 
-              {resource.availabilityEnd ? resource.availabilityEnd.substring(0, 5) : 'Any'}
-            </span>
-          </p>
-        )}
+        
+        <div style={{ color: '#475569', fontSize: '13px', display: 'flex', gap: '16px', alignItems: 'center' }}>
+          <span><strong>Type:</strong> {resource.type.replace('_', ' ')}</span>
+          <span>•</span>
+          <span><strong>Location:</strong> {resource.location}</span>
+          <span>•</span>
+          <span><strong>Capacity:</strong> {resource.capacity}</span>
+          {(resource.availabilityStart || resource.availabilityEnd) && (
+            <>
+              <span>•</span>
+              <span>
+                <strong>Available:</strong> {resource.availabilityStart ? resource.availabilityStart.substring(0, 5) : 'Any'} - {resource.availabilityEnd ? resource.availabilityEnd.substring(0, 5) : 'Any'}
+              </span>
+            </>
+          )}
+        </div>
       </div>
 
-      <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid #f1f5f9', paddingTop: '16px', gap: '8px' }}>
-         <button 
-            onClick={() => onEdit(resource)}
-            style={{ padding: '8px 16px', backgroundColor: '#f8fafc', color: '#334155', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', transition: 'background-color 0.2s' }}
-            onMouseEnter={e => e.currentTarget.style.backgroundColor = '#f1f5f9'}
-            onMouseLeave={e => e.currentTarget.style.backgroundColor = '#f8fafc'}
-         >
-           Edit
-         </button>
-         <button 
-            onClick={() => onDelete(resource.id)}
-            style={{ padding: '8px 16px', backgroundColor: '#fef2f2', color: '#b91c1c', border: '1px solid #fecaca', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', transition: 'background-color 0.2s' }}
-            onMouseEnter={e => e.currentTarget.style.backgroundColor = '#fee2e2'}
-            onMouseLeave={e => e.currentTarget.style.backgroundColor = '#fef2f2'}
-         >
-           Delete
-         </button>
-      </div>
+      {isAdmin && (
+        <div style={{ display: 'flex', gap: '8px' }}>
+           <button 
+              onClick={() => onEdit(resource)}
+              style={{ padding: '8px 16px', backgroundColor: '#f8fafc', color: '#334155', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', transition: 'background-color 0.2s' }}
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = '#f1f5f9'}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = '#f8fafc'}
+           >
+             Edit
+           </button>
+           <button 
+              onClick={() => onDelete(resource.id)}
+              style={{ padding: '8px 16px', backgroundColor: '#fef2f2', color: '#b91c1c', border: '1px solid #fecaca', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', transition: 'background-color 0.2s' }}
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = '#fee2e2'}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = '#fef2f2'}
+           >
+             Delete
+           </button>
+        </div>
+      )}
     </div>
   );
 }

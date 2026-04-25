@@ -43,7 +43,14 @@ function App() {
               <Route path="dashboard" element={<Home />} />
               <Route path="profile" element={<ProfilePage />} />
               <Route path="security" element={<AccountSecurityPage />} />
-              <Route path="resources" element={<ResourcesPage />} />
+              <Route
+                path="resources"
+                element={
+                  <ProtectedRoute allowedRoles={["ADMIN"]}>
+                    <ResourcesPage />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="bookings" element={<BookingsPage />} />
               <Route path="tickets" element={<TicketListPage />} />
               <Route path="tickets/new" element={<CreateTicketPage />} />

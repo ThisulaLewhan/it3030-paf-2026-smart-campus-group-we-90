@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import bookingService from "../../services/bookingService";
+import resourceService from "../../services/resourceService";
 import { useAuth } from "../../context/AuthContext";
 import "./BookingsPage.css";
 
@@ -36,13 +37,6 @@ const UsersIcon = () => (
   </svg>
 );
 
-// ── Static Data for Popular Resources ──
-const popularResources = [
-  { id: "LH-101", name: "LH-101", type: "Lecture Hall", building: "Main Building", capacity: 150, image: "/images/resources/lecture_hall.png", tag: "lecture", tagLabel: "Lecture Hall" },
-  { id: "Lab-2", name: "Lab 2", type: "Computer Lab", building: "Engineering Building", capacity: 40, image: "/images/resources/computer_lab.png", tag: "lab", tagLabel: "Computer Lab" },
-  { id: "MR-03", name: "MR-03", type: "Meeting Room", building: "Admin Building", capacity: 12, image: "/images/resources/meeting_room.png", tag: "meeting", tagLabel: "Meeting Room" },
-];
-
 // ── Helper: format date ──
 const formatDate = (dateStr) => {
   if (!dateStr) return '';
@@ -74,6 +68,7 @@ function BookingsPage() {
   const isAdmin = user?.role === 'ADMIN';
 
   const [bookings, setBookings] = useState([]);
+  const [resources, setResources] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
@@ -118,8 +113,21 @@ function BookingsPage() {
     }
   };
 
+  // ── Fetch Resources ──
+  const fetchResources = async () => {
+    try {
+      const res = await resourceService.getAll();
+      setResources(res.data || res || []);
+    } catch (err) {
+      console.error("Failed to fetch resources", err);
+    }
+  };
+
   useEffect(() => {
-    if (user) fetchBookings();
+    if (user) {
+      fetchBookings();
+      fetchResources();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -293,19 +301,24 @@ function BookingsPage() {
             <div className="bk-resources-section">
               <div className="bk-section-header">
                 <h2>Popular Resources</h2>
-                <Link to="/resources" className="bk-view-all">View all resources →</Link>
+                {isAdmin && <Link to="/resources" className="bk-view-all">View all resources →</Link>}
               </div>
-              <div className="bk-resources-grid">
-                {popularResources.map(res => (
-                  <div key={res.id} className="bk-resource-card" onClick={() => handleResourceSelect(res.id)}>
-                    <div className="bk-resource-img">
-                      <img src={res.image} alt={res.name} />
-                      <span className={`bk-resource-tag ${res.tag}`}>{res.tagLabel}</span>
+              <div className="bk-resources-list">
+                {resources.slice(0, 6).map(res => (
+                  <div key={res.id} className="bk-resource-list-item" onClick={() => handleResourceSelect(res.id)}>
+                    <div className="bk-resource-list-icon">
+                      <LocationIcon />
                     </div>
                     <div className="bk-resource-info">
-                      <h4>{res.name}</h4>
+                      <div className="bk-resource-header">
+                        <h4>{res.name}</h4>
+                        <span className={`bk-resource-tag ${res.type ? res.type.toLowerCase() : ''}`}>
+                          {res.type ? res.type.replace('_', ' ') : 'Resource'}
+                        </span>
+                      </div>
                       <div className="bk-resource-meta">
-                        <span><LocationIcon /> {res.building}</span>
+                        <span>{res.location}</span>
+                        <span>•</span>
                         <span><UsersIcon /> {res.capacity}</span>
                       </div>
                     </div>
@@ -322,8 +335,15 @@ function BookingsPage() {
               {error && <div className="bk-error-banner">{error}</div>}
               <form onSubmit={handleCreateBooking} className="bk-form-grid" style={error ? { marginTop: '1rem' } : {}}>
                 <div className="bk-form-group">
-                  <label>Resource / Room ID</label>
-                  <input type="text" name="resourceId" value={formData.resourceId} onChange={handleInputChange} required placeholder="e.g. LH-101, Lab-2, MR-03" />
+                  <label>Resource / Room</label>
+                  <select name="resourceId" value={formData.resourceId} onChange={handleInputChange} required>
+                    <option value="" disabled>Select a resource...</option>
+                    {resources.map(res => (
+                      <option key={res.id} value={res.id}>
+                        {res.name} ({res.location}) - Capacity: {res.capacity}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div className="bk-form-group">
                   <label>Date</label>

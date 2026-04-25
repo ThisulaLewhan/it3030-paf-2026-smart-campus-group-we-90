@@ -67,13 +67,13 @@ const moduleLinks = [
   { to: "/notifications", label: "Notifications", icon: "notifications", section: "General" },
 
   // Services section
-  { to: "/resources", label: "Resources", icon: "resources", section: "Services" },
   { to: "/bookings", label: "Bookings", icon: "bookings", section: "Services" },
   { to: "/tickets", label: "Support Tickets", icon: "tickets", section: "Services" },
 
   // Administration section
   // Explicitly restricted structural elements that require massive privilege
   { to: "/admin/users", label: "User Roles", icon: "admin", allowedRoles: ["ADMIN"], section: "Admin" },
+  { to: "/resources", label: "Resources", icon: "resources", allowedRoles: ["ADMIN"], section: "Admin" },
   { to: "/admin/system", label: "System Config", icon: "system", allowedRoles: ["ADMIN"], section: "Admin" },
 ];
 

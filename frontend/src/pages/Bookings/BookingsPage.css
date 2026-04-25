@@ -259,65 +259,59 @@
   gap: 0.55rem;
 }
 
-.bk-resources-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
+.bk-resources-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
-.bk-resource-card {
+.bk-resource-list-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
   border-radius: var(--radius-md);
-  overflow: hidden;
   border: 1px solid var(--color-slate-200);
-  transition: transform var(--transition-base), box-shadow var(--transition-base);
+  background: var(--color-white);
+  transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
   cursor: pointer;
 }
 
-.bk-resource-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
+.bk-resource-list-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+  border-color: var(--color-primary-ghost);
 }
 
-.bk-resource-img {
-  position: relative;
-  width: 100%;
-  height: 130px;
-  overflow: hidden;
+.bk-resource-list-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--color-primary-surface);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-.bk-resource-img img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.4s var(--ease-out);
+.bk-resource-list-icon svg {
+  width: 20px;
+  height: 20px;
 }
-
-.bk-resource-card:hover .bk-resource-img img {
-  transform: scale(1.05);
-}
-
-.bk-resource-tag {
-  position: absolute;
-  bottom: 8px;
-  left: 8px;
-  padding: 0.2rem 0.6rem;
-  border-radius: var(--radius-sm);
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: var(--color-white);
-  backdrop-filter: blur(4px);
-}
-
-.bk-resource-tag.lecture { background: rgba(59, 130, 246, 0.85); }
-.bk-resource-tag.lab { background: rgba(16, 185, 129, 0.85); }
-.bk-resource-tag.meeting { background: rgba(139, 92, 246, 0.85); }
-.bk-resource-tag.equipment { background: rgba(245, 158, 11, 0.85); }
 
 .bk-resource-info {
-  padding: 0.85rem;
+  flex: 1;
 }
 
-.bk-resource-info h4 {
+.bk-resource-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+.bk-resource-header h4 {
   margin: 0;
   font-size: 0.95rem;
   font-weight: 700;
@@ -327,17 +321,31 @@
 .bk-resource-meta {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-top: 0.35rem;
-  color: var(--color-slate-400);
-  font-size: 0.78rem;
+  gap: 0.75rem;
+  color: var(--color-slate-500);
+  font-size: 0.8rem;
 }
 
 .bk-resource-meta span {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: 0.35rem;
 }
+
+.bk-resource-tag {
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: var(--color-slate-100);
+  color: var(--color-slate-600);
+  text-transform: capitalize;
+}
+
+.bk-resource-tag.lecture { background: rgba(59, 130, 246, 0.15); color: #1d4ed8; }
+.bk-resource-tag.lab { background: rgba(16, 185, 129, 0.15); color: #047857; }
+.bk-resource-tag.meeting { background: rgba(139, 92, 246, 0.15); color: #6d28d9; }
+.bk-resource-tag.equipment { background: rgba(245, 158, 11, 0.15); color: #b45309; }
 
 /* ── My Bookings Table ── */
 .bk-table-section {

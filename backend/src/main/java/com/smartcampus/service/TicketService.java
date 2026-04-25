@@ -285,7 +285,16 @@ public class TicketService {
 
         ticket.setStatus(next.name());
         ticket.setUpdatedAt(LocalDateTime.now());
-        return ticketRepository.save(ticket);
+        Ticket saved = ticketRepository.save(ticket);
+
+        // Notify the ticket creator about the status change
+        if (ticket.getCreatedBy() != null) {
+            userRepository.findByEmail(ticket.getCreatedBy()).ifPresent(ticketOwner ->
+                notificationService.notifyTicketStatusUpdate(ticketOwner, ticket.getId(), next.name())
+            );
+        }
+
+        return saved;
     }
 }
 

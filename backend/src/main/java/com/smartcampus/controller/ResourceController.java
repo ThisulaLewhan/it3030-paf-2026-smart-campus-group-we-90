@@ -30,8 +30,9 @@ public class ResourceController {
     public ResponseEntity<List<ResourceResponse>> searchResources(
             @RequestParam(required = false) ResourceType type,
             @RequestParam(required = false) Integer capacity,
-            @RequestParam(required = false) String location) {
-        return ResponseEntity.ok(resourceService.searchResources(type, capacity, location));
+            @RequestParam(required = false) String location,
+            @RequestParam(required = false) com.smartcampus.entity.ResourceStatus status) {
+        return ResponseEntity.ok(resourceService.searchResources(type, capacity, location, status));
     }
 
     @GetMapping("/{id}")

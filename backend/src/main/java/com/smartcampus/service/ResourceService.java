@@ -65,13 +65,14 @@ public class ResourceService {
         resourceRepository.delete(resource);
     }
 
-    public List<ResourceResponse> searchResources(ResourceType type, Integer capacity, String location) {
+    public List<ResourceResponse> searchResources(ResourceType type, Integer capacity, String location, com.smartcampus.entity.ResourceStatus status) {
         String normalizedLocation = location == null ? null : location.trim().toLowerCase();
 
         return resourceRepository.findAll()
                 .stream()
                 .filter(resource -> type == null || resource.getType() == type)
                 .filter(resource -> capacity == null || (resource.getCapacity() != null && resource.getCapacity() >= capacity))
+                .filter(resource -> status == null || resource.getStatus() == status)
                 .filter(resource -> normalizedLocation == null || normalizedLocation.isBlank()
                         || (resource.getLocation() != null && resource.getLocation().toLowerCase().contains(normalizedLocation)))
                 .map(ResourceResponse::from)

@@ -24,12 +24,13 @@ function ResourcesPage() {
       setLoading(true);
       let response;
       
-      if (searchParams && (searchParams.type || searchParams.capacity || searchParams.location)) {
+      if (searchParams && (searchParams.type || searchParams.capacity || searchParams.location || searchParams.status)) {
         // filter out empty params
         const params = {};
         if (searchParams.type) params.type = searchParams.type;
         if (searchParams.capacity) params.capacity = searchParams.capacity;
         if (searchParams.location) params.location = searchParams.location;
+        if (searchParams.status) params.status = searchParams.status;
         
         response = await resourceService.search(params);
       } else {

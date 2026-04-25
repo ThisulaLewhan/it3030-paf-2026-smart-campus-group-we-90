@@ -4,7 +4,8 @@ function ResourceFilter({ onSearch, onClear }) {
   const [filters, setFilters] = useState({
     type: '',
     capacity: '',
-    location: ''
+    location: '',
+    status: ''
   });
 
   const handleChange = (e) => {
@@ -17,7 +18,7 @@ function ResourceFilter({ onSearch, onClear }) {
   };
 
   const handleClear = () => {
-    setFilters({ type: '', capacity: '', location: '' });
+    setFilters({ type: '', capacity: '', location: '', status: '' });
     onClear();
   };
 
@@ -65,6 +66,20 @@ function ResourceFilter({ onSearch, onClear }) {
           <option value="New Building">New Building</option>
           <option value="School Of Business">School Of Business</option>
           <option value="Engineering Building">Engineering Building</option>
+        </select>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', minWidth: '150px' }}>
+        <label style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '4px', color: '#555' }}>Status</label>
+        <select 
+          name="status" 
+          value={filters.status} 
+          onChange={handleChange} 
+          style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc', backgroundColor: '#fff' }}
+        >
+          <option value="">All Statuses</option>
+          <option value="ACTIVE">Active</option>
+          <option value="OUT_OF_SERVICE">Out of Service</option>
         </select>
       </div>
 

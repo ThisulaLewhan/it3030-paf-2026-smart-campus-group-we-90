@@ -142,13 +142,18 @@ function ResourceForm({ onResourceSaved, onCancel, initialData }) {
 
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <label style={{ marginBottom: '4px', fontWeight: 'bold', fontSize: '14px' }}>Location *</label>
-          <input 
-            type="text" 
+          <select 
             name="location" 
             value={formData.location} 
             onChange={handleChange} 
-            style={{ padding: '8px', borderRadius: '4px', border: errors.location ? '1px solid red' : '1px solid #ccc' }}
-          />
+            style={{ padding: '8px', borderRadius: '4px', border: errors.location ? '1px solid red' : '1px solid #ccc', backgroundColor: '#fff' }}
+          >
+            <option value="" disabled>Select a location</option>
+            <option value="Main Building">Main Building</option>
+            <option value="New Building">New Building</option>
+            <option value="School Of Business">School Of Business</option>
+            <option value="Engineering Building">Engineering Building</option>
+          </select>
           {errors.location && <span style={{ color: 'red', fontSize: '12px', marginTop: '4px' }}>{errors.location}</span>}
         </div>
 

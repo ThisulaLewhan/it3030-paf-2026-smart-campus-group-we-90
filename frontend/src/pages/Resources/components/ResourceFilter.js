@@ -54,14 +54,18 @@ function ResourceFilter({ onSearch, onClear }) {
 
       <div style={{ display: 'flex', flexDirection: 'column', minWidth: '150px' }}>
         <label style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '4px', color: '#555' }}>Location</label>
-        <input 
-          type="text" 
+        <select 
           name="location" 
           value={filters.location} 
           onChange={handleChange} 
-          placeholder="e.g. Main Building"
-          style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-        />
+          style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc', backgroundColor: '#fff' }}
+        >
+          <option value="">All Locations</option>
+          <option value="Main Building">Main Building</option>
+          <option value="New Building">New Building</option>
+          <option value="School Of Business">School Of Business</option>
+          <option value="Engineering Building">Engineering Building</option>
+        </select>
       </div>
 
       <div style={{ display: 'flex', gap: '8px' }}>

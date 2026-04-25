@@ -155,7 +155,9 @@ public class AttachmentService {
     public List<Attachment> getAttachmentsForTicket(String ticketId, String callerEmail,
                                                      String callerRole) {
         checkTicketAccess(ticketId, callerEmail, callerRole);
-        return attachmentRepository.findByTicketId(ticketId);
+        return attachmentRepository.findByTicketId(ticketId).stream()
+                .filter(a -> a.getStoredPath() != null && Files.exists(Paths.get(a.getStoredPath())))
+                .collect(java.util.stream.Collectors.toList());
     }
 
     /**

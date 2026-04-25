@@ -109,7 +109,7 @@ function TicketCard({ ticket, role, userEmail, onAssign, onUpdateStatus, onEdit,
           </button>
         )}
 
-        {role === "ADMIN" && (
+        {role === "ADMIN" && ticket.status === "OPEN" && (
           <button
             className="btn btn-sm btn-primary"
             onClick={() => onAssign(ticket)}

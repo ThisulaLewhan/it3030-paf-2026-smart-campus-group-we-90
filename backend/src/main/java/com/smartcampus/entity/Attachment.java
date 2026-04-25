@@ -15,6 +15,7 @@ public class Attachment {
     private String contentType;
     private long sizeBytes;
     private LocalDateTime uploadedAt;
+    private String uploadedBy;
 
     public String getId() {
         return id;
@@ -70,5 +71,13 @@ public class Attachment {
 
     public void setUploadedAt(LocalDateTime uploadedAt) {
         this.uploadedAt = uploadedAt;
+    }
+
+    public String getUploadedBy() {
+        return uploadedBy;
+    }
+
+    public void setUploadedBy(String uploadedBy) {
+        this.uploadedBy = uploadedBy;
     }
 }

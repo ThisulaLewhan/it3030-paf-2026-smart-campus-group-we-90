@@ -1,14 +1,26 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import ticketService from "../../services/ticketService";
 import userService from "../../services/userService";
 import "./Tickets.css";
 
-const NEXT_STATUS = {
-  OPEN: "IN_PROGRESS",
-  IN_PROGRESS: "RESOLVED",
-  RESOLVED: "CLOSED",
+/** Allowed next statuses for TECHNICIAN role. */
+const TECH_TRANSITIONS = {
+  OPEN:        ["IN_PROGRESS"],
+  IN_PROGRESS: ["RESOLVED", "OPEN"],
+  RESOLVED:    ["IN_PROGRESS"],
+  CLOSED:      [],
+  REJECTED:    [],
+};
+
+/** Allowed next statuses for ADMIN role. */
+const ADMIN_TRANSITIONS = {
+  OPEN:        ["IN_PROGRESS", "REJECTED"],
+  IN_PROGRESS: ["RESOLVED", "OPEN"],
+  RESOLVED:    ["CLOSED", "IN_PROGRESS"],
+  CLOSED:      [],
+  REJECTED:    [],
 };
 
 function TicketDetailPage() {
@@ -25,17 +37,23 @@ function TicketDetailPage() {
   const [error, setError] = useState(null);
 
   // Status update
+  const [selectedStatus, setSelectedStatus] = useState("");
   const [resolutionNotes, setResolutionNotes] = useState("");
   const [statusMsg, setStatusMsg] = useState("");
 
-  // Reject
+  // Reject (ADMIN)
   const [rejectReason, setRejectReason] = useState("");
   const [rejectMsg, setRejectMsg] = useState("");
 
-  // Assign
-  const [technicianId, setTechnicianId] = useState("");
-  const [assignMsg, setAssignMsg] = useState("");
+  // Assign technician modal (ADMIN)
   const [technicians, setTechnicians] = useState([]);
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [selectedTechId, setSelectedTechId] = useState("");
+  const [assigning, setAssigning] = useState(false);
+  const [assignError, setAssignError] = useState(null);
+
+  // Success toast
+  const [toast, setToast] = useState(null);
 
   // Comments
   const [newComment, setNewComment] = useState("");
@@ -47,26 +65,35 @@ function TicketDetailPage() {
   const fileInputRef = useRef(null);
   const [uploadMsg, setUploadMsg] = useState("");
 
-  useEffect(() => {
-    loadAll();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  // Edit ticket
+  const [editMode, setEditMode] = useState(false);
+  const [editForm, setEditForm] = useState({
+    title: "", category: "", description: "", priority: "",
+    location: "", resourceId: "", preferredContact: "",
+  });
+  const [editMsg, setEditMsg] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (role !== "ADMIN") return;
-    userService.getTechnicians()
-      .then((res) => setTechnicians(res.data))
-      .catch(() => setTechnicians([]));
-  }, [role]);
+  // Delete ticket
+  const [deleting, setDeleting] = useState(false);
 
-  async function loadAll() {
+  // Attachment blob URLs for thumbnail/lightbox display
+  const [blobUrls, setBlobUrls] = useState({});
+  const [loadingBlobs, setLoadingBlobs] = useState(false);
+  const [lightbox, setLightbox] = useState(null); // { url, filename } | null
+
+  const loadAll = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
+      // Only ADMIN / TECHNICIAN may see attachments — skip the fetch for USER to avoid 403
+      const shouldFetchAttachments = role === "ADMIN" || role === "TECHNICIAN";
       const [ticketRes, attachRes, commRes] = await Promise.all([
-        ticketService.getById(id),
-        ticketService.getAttachments(id),
-        ticketService.getComments(id),
+        ticketService.getTicketDetail(id),
+        shouldFetchAttachments
+          ? ticketService.getTicketAttachments(id).catch(() => ({ data: [] }))
+          : Promise.resolve({ data: [] }),
+        ticketService.getTicketComments(id),
       ]);
       setTicket(ticketRes.data);
       setAttachments(attachRes.data);
@@ -76,55 +103,135 @@ function TicketDetailPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [id, role]);
+
+  useEffect(() => { loadAll(); }, [loadAll]);
+
+  // Pre-fill edit form whenever ticket data changes
+  useEffect(() => {
+    if (ticket) {
+      setEditForm({
+        title: ticket.title || "",
+        category: ticket.category || "",
+        description: ticket.description || "",
+        priority: ticket.priority || "",
+        location: ticket.location || "",
+        resourceId: ticket.resourceId || "",
+        preferredContact: ticket.preferredContact || "",
+      });
+    }
+  }, [ticket]);
+
+  useEffect(() => {
+    if (role !== "ADMIN") return;
+    userService.getTechnicians()
+      .then((res) => setTechnicians(res.data))
+      .catch(() => setTechnicians([]));
+  }, [role]);
+
+  // Fetch raw image bytes for thumbnails/lightbox once ticket + attachments are loaded
+  useEffect(() => {
+    if (!ticket || attachments.length === 0) return;
+    const canView =
+      role === "ADMIN" ||
+      (role === "TECHNICIAN" && ticket.assignedTechnician === userEmail);
+    if (!canView) return;
+
+    let cancelled = false;
+    setLoadingBlobs(true);
+
+    (async () => {
+      const urls = {};
+      await Promise.all(
+        attachments.map(async (a) => {
+          try {
+            const res = await ticketService.getAttachmentImageBlob(id, a.id);
+            if (!cancelled) urls[a.id] = URL.createObjectURL(res.data);
+          } catch { /* skip blobs that fail to load */ }
+        })
+      );
+      if (!cancelled) {
+        setBlobUrls(urls);
+        setLoadingBlobs(false);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [ticket, attachments, role, userEmail, id]);
+
+  // Revoke stale blob URLs to avoid memory leaks
+  useEffect(() => {
+    return () => { Object.values(blobUrls).forEach(URL.revokeObjectURL); };
+  }, [blobUrls]);
 
   // ── Status update ─────────────────────────────────────────────────────────
   async function handleStatusAdvance() {
-    const next = NEXT_STATUS[ticket.status];
-    if (!next) return;
+    if (!selectedStatus) return;
     try {
-      const res = await ticketService.updateStatus(id, {
-        status: next,
-        resolutionNotes: resolutionNotes || undefined,
+      const res = await ticketService.updateTicketStatus(id, {
+        newStatus: selectedStatus,
+        ...(selectedStatus === "RESOLVED" ? { resolutionNotes } : {}),
       });
       setTicket(res.data);
+      setSelectedStatus("");
       setResolutionNotes("");
       setStatusMsg("Status updated.");
     } catch (err) {
-      setStatusMsg(err.response?.data || "Failed to update status.");
+      setStatusMsg(
+        err.response?.data?.message ?? err.response?.data ?? "Failed to update status."
+      );
     }
   }
 
-  // ── Reject ────────────────────────────────────────────────────────────────
+  // ── Reject (ADMIN only) ───────────────────────────────────────────────────
   async function handleReject() {
     if (!rejectReason.trim()) {
       setRejectMsg("Rejection reason is required.");
       return;
     }
     try {
-      const res = await ticketService.reject(id, rejectReason.trim());
+      const res = await ticketService.updateTicketStatus(id, {
+        newStatus: "REJECTED",
+        rejectionReason: rejectReason.trim(),
+      });
       setTicket(res.data);
       setRejectReason("");
       setRejectMsg("Ticket rejected.");
     } catch (err) {
-      setRejectMsg(err.response?.data || "Failed to reject ticket.");
+      setRejectMsg(
+        err.response?.data?.message ?? err.response?.data ?? "Failed to reject ticket."
+      );
     }
   }
 
-  // ── Assign ────────────────────────────────────────────────────────────────
+  // ── Assign technician modal (ADMIN) ───────────────────────────────────────
+  function openAssignModal() {
+    setSelectedTechId("");
+    setAssignError(null);
+    setAssignModalOpen(true);
+  }
+
   async function handleAssign() {
-    if (!technicianId.trim()) {
-      setAssignMsg("Technician ID is required.");
-      return;
-    }
+    if (!selectedTechId) { setAssignError("Please select a technician."); return; }
+    setAssigning(true);
+    setAssignError(null);
     try {
-      const res = await ticketService.assign(id, technicianId.trim());
+      const res = await ticketService.assignTicketTechnician(id, selectedTechId);
       setTicket(res.data);
-      setTechnicianId("");
-      setAssignMsg("Technician assigned.");
+      setAssignModalOpen(false);
+      showToast("Technician assigned successfully.");
     } catch (err) {
-      setAssignMsg(err.response?.data || "Failed to assign technician.");
+      setAssignError(
+        err.response?.data?.message ?? err.response?.data ?? "Assignment failed."
+      );
+    } finally {
+      setAssigning(false);
     }
+  }
+
+  function showToast(message) {
+    setToast(message);
+    setTimeout(() => setToast(null), 3500);
   }
 
   // ── Comments ──────────────────────────────────────────────────────────────
@@ -132,7 +239,7 @@ function TicketDetailPage() {
     e.preventDefault();
     if (!newComment.trim()) return;
     try {
-      const res = await ticketService.addComment(id, newComment.trim());
+      const res = await ticketService.addTicketComment(id, newComment.trim());
       setComments((prev) => [...prev, res.data]);
       setNewComment("");
       setCommentMsg("");
@@ -144,7 +251,7 @@ function TicketDetailPage() {
   async function handleEditComment(commentId) {
     if (!editingContent.trim()) return;
     try {
-      const res = await ticketService.editComment(id, commentId, editingContent.trim());
+      const res = await ticketService.editTicketComment(id, commentId, editingContent.trim());
       setComments((prev) =>
         prev.map((c) => (c.id === commentId ? res.data : c))
       );
@@ -157,7 +264,7 @@ function TicketDetailPage() {
 
   async function handleDeleteComment(commentId) {
     try {
-      await ticketService.deleteComment(id, commentId);
+      await ticketService.deleteTicketComment(id, commentId);
       setComments((prev) => prev.filter((c) => c.id !== commentId));
     } catch {
       setCommentMsg("Failed to delete comment.");
@@ -171,7 +278,7 @@ function TicketDetailPage() {
     const form = new FormData();
     files.forEach((f) => form.append("files", f));
     try {
-      const res = await ticketService.uploadAttachments(id, form);
+      const res = await ticketService.uploadTicketAttachments(id, form);
       setAttachments((prev) => [...prev, ...res.data]);
       setUploadMsg(`${files.length} file(s) uploaded.`);
     } catch (err) {
@@ -181,13 +288,46 @@ function TicketDetailPage() {
     }
   }
 
+  // ── Edit ticket ───────────────────────────────────────────────────────────
+  async function handleEditSubmit(e) {
+    e.preventDefault();
+    setEditMsg("");
+    setSaving(true);
+    try {
+      const res = await ticketService.updateTicket(id, editForm);
+      setTicket(res.data);
+      setEditMode(false);
+      setToast("Ticket updated successfully.");
+    } catch (err) {
+      setEditMsg(err.response?.data ?? "Failed to update ticket.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  // ── Delete ticket ─────────────────────────────────────────────────────────
+  async function handleDelete() {
+    if (!window.confirm("Are you sure you want to delete this ticket? This cannot be undone.")) return;
+    setDeleting(true);
+    try {
+      await ticketService.deleteTicket(id);
+      navigate("/tickets");
+    } catch (err) {
+      setDeleting(false);
+      setToast(err.response?.data ?? "Failed to delete ticket.");
+    }
+  }
+
   // ── Helpers ───────────────────────────────────────────────────────────────
-  const isAdmin = role === "ADMIN";
+  const isAdmin      = role === "ADMIN";
   const isTechnician = role === "TECHNICIAN";
-  const isAssignedTechnician = ticket?.assignedTechnician === userEmail;
-  const canAdvanceStatus =
-    isAdmin || isTechnician || isAssignedTechnician;
-  const nextStatus = ticket ? NEXT_STATUS[ticket.status] : null;
+  const canAdvanceStatus = isAdmin || isTechnician;
+  const canViewAttachments = isAdmin || (isTechnician && ticket?.assignedTechnician === userEmail);
+  const canEditTicket   = ticket?.status === "OPEN" && userEmail === ticket?.createdBy;
+  const canDeleteTicket = (ticket?.status === "OPEN" && userEmail === ticket?.createdBy) || isAdmin;
+  const allowedNextStatuses = ticket
+    ? (isAdmin ? ADMIN_TRANSITIONS[ticket.status] ?? [] : TECH_TRANSITIONS[ticket.status] ?? [])
+    : [];
 
   if (loading) return <p className="state-msg">Loading…</p>;
   if (error) return <p className="state-msg error">{error}</p>;
@@ -214,7 +354,119 @@ function TicketDetailPage() {
             </span>
           )}
         </div>
+        {(canEditTicket || canDeleteTicket) && (
+          <div className="detail-header-actions">
+            {canEditTicket && (
+              <button
+                className="btn btn-secondary btn-sm"
+                onClick={() => { setEditMode((m) => !m); setEditMsg(""); }}
+              >
+                {editMode ? "Cancel Edit" : "Edit Ticket"}
+              </button>
+            )}
+            {canDeleteTicket && (
+              <button
+                className="btn btn-danger btn-sm"
+                onClick={handleDelete}
+                disabled={deleting}
+              >
+                {deleting ? "Deleting…" : "Delete Ticket"}
+              </button>
+            )}
+          </div>
+        )}
       </div>
+
+      {/* ── Edit ticket form (creator, OPEN status only) ── */}
+      {editMode && canEditTicket && (
+        <div className="page-card detail-card">
+          <h2>Edit Ticket</h2>
+          <form onSubmit={handleEditSubmit}>
+            <div className="form-group">
+              <label>Title <span className="required">*</span></label>
+              <input
+                type="text"
+                value={editForm.title}
+                onChange={(e) => setEditForm((f) => ({ ...f, title: e.target.value }))}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label>Category</label>
+              <select
+                value={editForm.category}
+                onChange={(e) => setEditForm((f) => ({ ...f, category: e.target.value }))}
+              >
+                <option value="">— select —</option>
+                <option value="MAINTENANCE">Maintenance</option>
+                <option value="IT_SUPPORT">IT Support</option>
+                <option value="CLEANING">Cleaning</option>
+                <option value="SECURITY">Security</option>
+                <option value="OTHER">Other</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label>Priority</label>
+              <select
+                value={editForm.priority}
+                onChange={(e) => setEditForm((f) => ({ ...f, priority: e.target.value }))}
+              >
+                <option value="">— select —</option>
+                <option value="LOW">Low</option>
+                <option value="MEDIUM">Medium</option>
+                <option value="HIGH">High</option>
+                <option value="URGENT">Urgent</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label>Description <span className="required">*</span></label>
+              <textarea
+                value={editForm.description}
+                onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))}
+                required
+                rows={4}
+              />
+            </div>
+            <div className="form-group">
+              <label>Location</label>
+              <input
+                type="text"
+                value={editForm.location}
+                onChange={(e) => setEditForm((f) => ({ ...f, location: e.target.value }))}
+              />
+            </div>
+            <div className="form-group">
+              <label>Resource ID</label>
+              <input
+                type="text"
+                value={editForm.resourceId}
+                onChange={(e) => setEditForm((f) => ({ ...f, resourceId: e.target.value }))}
+              />
+            </div>
+            <div className="form-group">
+              <label>Preferred Contact</label>
+              <input
+                type="text"
+                value={editForm.preferredContact}
+                onChange={(e) => setEditForm((f) => ({ ...f, preferredContact: e.target.value }))}
+              />
+            </div>
+            {editMsg && <p className="form-msg error">{editMsg}</p>}
+            <div style={{ marginTop: "0.75rem", display: "flex", gap: "0.5rem" }}>
+              <button type="submit" className="btn btn-primary" disabled={saving}>
+                {saving ? "Saving…" : "Save Changes"}
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => { setEditMode(false); setEditMsg(""); }}
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       {/* ── Details grid ── */}
       <div className="page-card detail-card">
@@ -250,107 +502,127 @@ function TicketDetailPage() {
         </dl>
       </div>
 
-      {/* ── Admin controls ── */}
-      {isAdmin && ticket.status === "OPEN" && (
+      {/* ── Admin: Assign Technician (always visible to ADMIN) ── */}
+      {isAdmin && (
         <div className="page-card detail-card">
-          <h2>Admin Controls</h2>
-
-          <div className="control-group">
-            <h3>Assign Technician</h3>
-            <div className="inline-form">
-              <select
-                value={technicianId}
-                onChange={(e) => setTechnicianId(e.target.value)}
-              >
-                <option value="">— Select a technician —</option>
-                {technicians.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.name} ({t.email})
-                  </option>
-                ))}
-              </select>
-              <button className="btn btn-primary" onClick={handleAssign}>
-                Assign
-              </button>
-            </div>
-            {assignMsg && <p className="form-msg">{assignMsg}</p>}
+          <h2>Assign Technician</h2>
+          <dl className="detail-grid">
+            <dt>Currently Assigned</dt>
+            <dd>
+              {ticket.assignedTechnician
+                ? ticket.assignedTechnician
+                : <em>Not assigned yet</em>}
+            </dd>
+          </dl>
+          <div className="control-group" style={{ marginTop: "0.75rem" }}>
+            <button className="btn btn-primary" onClick={openAssignModal}>
+              {ticket.assignedTechnician ? "Reassign Technician" : "Assign Technician"}
+            </button>
           </div>
 
-          <div className="control-group">
-            <h3>Reject Ticket</h3>
-            <div className="inline-form">
-              <input
-                type="text"
-                placeholder="Reason for rejection"
-                value={rejectReason}
-                onChange={(e) => setRejectReason(e.target.value)}
-              />
-              <button className="btn btn-danger" onClick={handleReject}>
-                Reject
-              </button>
+          {/* Reject sub-section — only when ticket is OPEN */}
+          {ticket.status === "OPEN" && (
+            <div
+              className="control-group"
+              style={{ marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid #e2e8f0" }}
+            >
+              <h3>Reject Ticket</h3>
+              <div className="inline-form">
+                <input
+                  type="text"
+                  placeholder="Reason for rejection"
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                />
+                <button className="btn btn-danger" onClick={handleReject}>
+                  Reject
+                </button>
+              </div>
+              {rejectMsg && <p className="form-msg">{rejectMsg}</p>}
             </div>
-            {rejectMsg && <p className="form-msg">{rejectMsg}</p>}
-          </div>
+          )}
         </div>
       )}
 
-      {/* ── Status advance controls (admin / technician / assigned) ── */}
-      {canAdvanceStatus && nextStatus && (
+      {/* ── Update Status (ADMIN / TECHNICIAN only) ── */}
+      {canAdvanceStatus && allowedNextStatuses.length > 0 && (
         <div className="page-card detail-card">
           <h2>Update Status</h2>
-          <p>
-            Advance from <strong>{ticket.status}</strong> →{" "}
-            <strong>{nextStatus.replace("_", " ")}</strong>
+          <p className="state-msg" style={{ margin: "0 0 0.75rem", padding: 0 }}>
+            Current: <strong>{ticket.status?.replace(/_/g, " ")}</strong>
           </p>
-          {nextStatus === "RESOLVED" && (
-            <textarea
-              className="notes-input"
-              placeholder="Resolution notes (optional)"
-              value={resolutionNotes}
-              onChange={(e) => setResolutionNotes(e.target.value)}
-            />
+          <div className="form-group">
+            <label>New Status</label>
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+            >
+              <option value="">— select —</option>
+              {allowedNextStatuses.map((s) => (
+                <option key={s} value={s}>{s.replace(/_/g, " ")}</option>
+              ))}
+            </select>
+          </div>
+          {selectedStatus === "RESOLVED" && (
+            <div className="form-group" style={{ marginTop: "0.5rem" }}>
+              <label>
+                Resolution Notes <span className="required">*</span>
+              </label>
+              <textarea
+                className="notes-input"
+                placeholder="Describe how this was resolved…"
+                value={resolutionNotes}
+                onChange={(e) => setResolutionNotes(e.target.value)}
+              />
+            </div>
           )}
-          <button className="btn btn-primary" onClick={handleStatusAdvance}>
-            Mark as {nextStatus.replace("_", " ")}
-          </button>
+          <div style={{ marginTop: "0.75rem" }}>
+            <button
+              className="btn btn-primary"
+              onClick={handleStatusAdvance}
+              disabled={!selectedStatus}
+            >
+              Save Status
+            </button>
+          </div>
           {statusMsg && <p className="form-msg">{statusMsg}</p>}
         </div>
       )}
 
-      {/* ── Attachments ── */}
-      <div className="page-card detail-card">
-        <h2>Attachments ({attachments.length}/3)</h2>
-        {attachments.length === 0 && <p className="state-msg">No attachments.</p>}
-        <ul className="attachment-list">
-          {attachments.map((a) => (
-            <li key={a.id} className="attachment-item">
-              <span className="attachment-icon">🖼</span>
-              <span>{a.filename}</span>
-              <span className="attachment-meta">
-                {(a.sizeBytes / 1024).toFixed(1)} KB ·{" "}
-                {a.uploadedAt ? new Date(a.uploadedAt).toLocaleDateString() : ""}
-              </span>
-            </li>
-          ))}
-        </ul>
-        {attachments.length < 3 && (
-          <div className="upload-area">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/png"
-              multiple
-              onChange={handleUpload}
-              style={{ display: "none" }}
-              id="file-upload"
-            />
-            <label htmlFor="file-upload" className="btn btn-secondary">
-              Upload Images
-            </label>
-            {uploadMsg && <p className="form-msg">{uploadMsg}</p>}
-          </div>
-        )}
-      </div>
+      {/* ── Attachments (ADMIN / assigned TECHNICIAN only) ── */}
+      {canViewAttachments && (
+        <div className="page-card detail-card">
+          <h2>Attachments ({attachments.length}/3)</h2>
+          {loadingBlobs && <p className="state-msg">Loading images…</p>}
+          {!loadingBlobs && attachments.length === 0 && (
+            <p className="state-msg">No attachments on this ticket.</p>
+          )}
+          {!loadingBlobs && attachments.length > 0 && (
+            <div className="attachment-thumbnail-grid">
+              {attachments.map((a) => (
+                <button
+                  key={a.id}
+                  type="button"
+                  className="attachment-thumb-btn"
+                  onClick={() => setLightbox({ url: blobUrls[a.id], filename: a.filename })}
+                  disabled={!blobUrls[a.id]}
+                  title={`${a.filename} (${(a.sizeBytes / 1024).toFixed(1)} KB)`}
+                >
+                  {blobUrls[a.id] ? (
+                    <img src={blobUrls[a.id]} alt={a.filename} className="attachment-thumb" />
+                  ) : (
+                    <span className="attachment-thumb-placeholder">🖼</span>
+                  )}
+                  <span className="attachment-thumb-name">{a.filename}</span>
+                  <span className="attachment-thumb-meta">
+                    {(a.sizeBytes / 1024).toFixed(1)} KB
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ── Comments ── */}
       <div className="page-card detail-card">
@@ -438,6 +710,88 @@ function TicketDetailPage() {
           </button>
         </form>
       </div>
+      {/* ── Image lightbox ── */}
+      {lightbox && (
+        <div
+          className="modal-overlay"
+          onClick={() => setLightbox(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Image preview: ${lightbox.filename}`}
+        >
+          <div className="modal-box lightbox-box" onClick={(e) => e.stopPropagation()}>
+            <div className="lightbox-header">
+              <span className="lightbox-filename">{lightbox.filename}</span>
+              <button
+                className="detail-toast-close lightbox-close"
+                onClick={() => setLightbox(null)}
+                aria-label="Close image preview"
+              >
+                ✕
+              </button>
+            </div>
+            {lightbox.url ? (
+              <img src={lightbox.url} alt={lightbox.filename} className="lightbox-img" />
+            ) : (
+              <p className="state-msg">Image not available.</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Assign technician modal (ADMIN) ── */}
+      {assignModalOpen && (
+        <div className="modal-overlay" onClick={() => setAssignModalOpen(false)}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <h2>Assign Technician</h2>
+            <p className="modal-subtitle">
+              Currently assigned:{" "}
+              {ticket.assignedTechnician
+                ? <strong>{ticket.assignedTechnician}</strong>
+                : <em>Not assigned yet</em>}
+            </p>
+            <div className="form-group">
+              <label>Select Technician</label>
+              <select
+                value={selectedTechId}
+                onChange={(e) => setSelectedTechId(e.target.value)}
+              >
+                <option value="">— choose —</option>
+                {technicians.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name} ({t.email})
+                  </option>
+                ))}
+              </select>
+            </div>
+            {assignError && <p className="field-error">{assignError}</p>}
+            <div className="modal-actions">
+              <button
+                className="btn btn-secondary"
+                onClick={() => setAssignModalOpen(false)}
+                disabled={assigning}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={handleAssign}
+                disabled={assigning}
+              >
+                {assigning ? "Assigning…" : "Confirm Assignment"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Success toast ── */}
+      {toast && (
+        <div className="detail-toast">
+          {toast}
+          <button className="detail-toast-close" onClick={() => setToast(null)}>✕</button>
+        </div>
+      )}
     </div>
   );
 }

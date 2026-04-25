@@ -36,9 +36,12 @@ function formatDate(dt) {
 }
 
 // ── Ticket card ─────────────────────────────────────────────────────────────
-function TicketCard({ ticket, role, onAssign, onUpdateStatus }) {
+function TicketCard({ ticket, role, userEmail, onAssign, onUpdateStatus, onEdit, onDelete }) {
   const navigate = useNavigate();
   const transitions = TECH_TRANSITIONS[ticket.status] ?? [];
+  const isCreator   = userEmail && ticket.createdBy === userEmail;
+  const canEdit     = role === "USER" && isCreator && ticket.status === "OPEN";
+  const canDelete   = (role === "USER" && isCreator && ticket.status === "OPEN") || role === "ADMIN";
 
   return (
     <div
@@ -78,6 +81,24 @@ function TicketCard({ ticket, role, onAssign, onUpdateStatus }) {
         >
           View Details
         </button>
+
+        {canEdit && (
+          <button
+            className="btn btn-sm btn-primary"
+            onClick={() => onEdit(ticket)}
+          >
+            Edit
+          </button>
+        )}
+
+        {canDelete && (
+          <button
+            className="btn btn-sm btn-danger"
+            onClick={() => onDelete(ticket)}
+          >
+            Delete
+          </button>
+        )}
 
         {role === "TECHNICIAN" && transitions.length > 0 && (
           <button
@@ -130,6 +151,17 @@ function TicketListPage() {
   const [resolutionNotes, setResolutionNotes] = useState("");
   const [statusUpdating,  setStatusUpdating]  = useState(false);
   const [statusError,     setStatusError]     = useState(null);
+
+  // Edit modal (USER, OPEN tickets only)
+  const [editModal,   setEditModal]   = useState(null); // ticket being edited
+  const [editForm,    setEditForm]    = useState({});
+  const [editSaving,  setEditSaving]  = useState(false);
+  const [editError,   setEditError]   = useState(null);
+
+  // Delete confirmation modal
+  const [deleteModal,  setDeleteModal]  = useState(null); // ticket to delete
+  const [deleting,     setDeleting]     = useState(false);
+  const [deleteError,  setDeleteError]  = useState(null);
 
   // ── Data fetch ──────────────────────────────────────────────────────────
   const fetchTickets = useCallback(async () => {
@@ -196,6 +228,56 @@ function TicketListPage() {
       setAssignError(err.response?.data?.message ?? "Assignment failed.");
     } finally {
       setAssigning(false);
+    }
+  }
+
+  // ── Edit ticket (USER, OPEN) ────────────────────────────────────────────
+  function openEditModal(ticket) {
+    setEditModal(ticket);
+    setEditForm({
+      title:            ticket.title            || "",
+      category:         ticket.category         || "",
+      description:      ticket.description      || "",
+      priority:         ticket.priority         || "",
+      location:         ticket.location         || "",
+      resourceId:       ticket.resourceId       || "",
+      preferredContact: ticket.preferredContact || "",
+    });
+    setEditError(null);
+  }
+  function closeEditModal() { setEditModal(null); }
+
+  async function handleEditSave() {
+    setEditSaving(true);
+    setEditError(null);
+    try {
+      await ticketService.updateTicket(editModal.id, editForm);
+      closeEditModal();
+      fetchTickets();
+    } catch (err) {
+      setEditError(err.response?.data ?? "Failed to update ticket.");
+    } finally {
+      setEditSaving(false);
+    }
+  }
+
+  // ── Delete ticket ────────────────────────────────────────────────────────
+  function openDeleteModal(ticket) {
+    setDeleteModal(ticket);
+    setDeleteError(null);
+  }
+  function closeDeleteModal() { setDeleteModal(null); }
+
+  async function handleDeleteConfirm() {
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await ticketService.deleteTicket(deleteModal.id);
+      closeDeleteModal();
+      fetchTickets();
+    } catch (err) {
+      setDeleteError(err.response?.data ?? "Failed to delete ticket.");
+      setDeleting(false);
     }
   }
 
@@ -296,8 +378,11 @@ function TicketListPage() {
               key={ticket.id}
               ticket={ticket}
               role={role}
+              userEmail={user?.email}
               onAssign={openAssignModal}
               onUpdateStatus={openStatusModal}
+              onEdit={openEditModal}
+              onDelete={openDeleteModal}
             />
           ))}
         </div>
@@ -405,6 +490,142 @@ function TicketListPage() {
                 disabled={statusUpdating || !selectedStatus}
               >
                 {statusUpdating ? "Saving…" : "Save"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ── Edit ticket modal (USER, OPEN tickets) ── */}
+      {editModal && (
+        <div className="modal-overlay" onClick={closeEditModal}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <h2>Edit Ticket</h2>
+            <p className="modal-subtitle">
+              Ticket: <strong>{editModal.title}</strong>
+            </p>
+
+            <div className="form-group">
+              <label>Title <span className="required">*</span></label>
+              <input
+                type="text"
+                value={editForm.title}
+                onChange={(e) => setEditForm((f) => ({ ...f, title: e.target.value }))}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Category</label>
+              <select
+                value={editForm.category}
+                onChange={(e) => setEditForm((f) => ({ ...f, category: e.target.value }))}
+              >
+                <option value="">— select —</option>
+                <option value="ELECTRICAL">Electrical</option>
+                <option value="PLUMBING">Plumbing</option>
+                <option value="HVAC">HVAC</option>
+                <option value="IT_SUPPORT">IT Support</option>
+                <option value="STRUCTURAL">Structural</option>
+                <option value="CLEANING">Cleaning</option>
+                <option value="OTHER">Other</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Priority</label>
+              <select
+                value={editForm.priority}
+                onChange={(e) => setEditForm((f) => ({ ...f, priority: e.target.value }))}
+              >
+                <option value="">— select —</option>
+                <option value="LOW">Low</option>
+                <option value="MEDIUM">Medium</option>
+                <option value="HIGH">High</option>
+                <option value="CRITICAL">Critical</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Description <span className="required">*</span></label>
+              <textarea
+                rows={3}
+                value={editForm.description}
+                onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Location</label>
+              <input
+                type="text"
+                value={editForm.location}
+                onChange={(e) => setEditForm((f) => ({ ...f, location: e.target.value }))}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Resource ID</label>
+              <input
+                type="text"
+                value={editForm.resourceId}
+                onChange={(e) => setEditForm((f) => ({ ...f, resourceId: e.target.value }))}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Preferred Contact</label>
+              <input
+                type="text"
+                value={editForm.preferredContact}
+                onChange={(e) => setEditForm((f) => ({ ...f, preferredContact: e.target.value }))}
+              />
+            </div>
+
+            {editError && <p className="field-error">{editError}</p>}
+
+            <div className="modal-actions">
+              <button
+                className="btn btn-secondary"
+                onClick={closeEditModal}
+                disabled={editSaving}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={handleEditSave}
+                disabled={editSaving}
+              >
+                {editSaving ? "Saving…" : "Save Changes"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Delete confirmation modal ── */}
+      {deleteModal && (
+        <div className="modal-overlay" onClick={closeDeleteModal}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <h2>Delete Ticket</h2>
+            <p className="modal-subtitle">
+              Are you sure you want to delete{" "}
+              <strong>"{deleteModal.title}"</strong>? This cannot be undone.
+            </p>
+            {deleteError && <p className="field-error">{deleteError}</p>}
+            <div className="modal-actions">
+              <button
+                className="btn btn-secondary"
+                onClick={closeDeleteModal}
+                disabled={deleting}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-danger"
+                onClick={handleDeleteConfirm}
+                disabled={deleting}
+              >
+                {deleting ? "Deleting…" : "Yes, Delete"}
               </button>
             </div>
           </div>

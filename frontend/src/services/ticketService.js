@@ -58,6 +58,10 @@ const ticketService = {
       headers: { "Content-Type": "multipart/form-data" },
     }),
 
+  updateTicket: (id, payload) => api.put(`/tickets/${id}`, payload),
+
+  deleteTicket: (id) => api.delete(`/tickets/${id}`),
+
   /** Fetches a single attachment's raw bytes as a Blob (for thumbnail / lightbox display). */
   getAttachmentImageBlob: (ticketId, attachmentId) =>
     api.get(`/tickets/${ticketId}/attachments/${attachmentId}`, { responseType: "blob" }),

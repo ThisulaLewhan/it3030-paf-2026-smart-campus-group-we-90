@@ -185,19 +185,50 @@ public class TicketService {
         return saved;
     }
 
-    public Ticket updateTicket(String id, Ticket updatedTicket) {
-        Ticket existingTicket = ticketRepository.findById(id)
+    public Ticket updateTicket(String id, TicketCreateDTO dto, String callerEmail, String callerRole) {
+        Ticket existing = ticketRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket not found: " + id));
-        existingTicket.setTitle(updatedTicket.getTitle());
-        existingTicket.setDescription(updatedTicket.getDescription());
-        existingTicket.setPriority(updatedTicket.getPriority());
-        existingTicket.setStatus(updatedTicket.getStatus());
-        existingTicket.setAssignedTo(updatedTicket.getAssignedTo());
-        existingTicket.setUpdatedAt(LocalDateTime.now());
-        return ticketRepository.save(existingTicket);
+
+        boolean isAdmin = "ROLE_ADMIN".equals(callerRole);
+        boolean isCreator = callerEmail.equals(existing.getCreatedBy());
+        if (!isAdmin && !isCreator) {
+            throw new ForbiddenException("You can only edit your own tickets.");
+        }
+        if (!isAdmin && !"OPEN".equals(existing.getStatus())) {
+            throw new ForbiddenException("Tickets can only be edited while in OPEN status.");
+        }
+
+        if (dto.getTitle() == null || dto.getTitle().isBlank()) {
+            throw new IllegalArgumentException("Title is required");
+        }
+        if (dto.getDescription() == null || dto.getDescription().isBlank()) {
+            throw new IllegalArgumentException("Description is required");
+        }
+
+        existing.setTitle(dto.getTitle());
+        existing.setCategory(dto.getCategory());
+        existing.setDescription(dto.getDescription());
+        existing.setPriority(dto.getPriority());
+        existing.setLocation(dto.getLocation());
+        existing.setResourceId(dto.getResourceId());
+        existing.setPreferredContact(dto.getPreferredContact());
+        existing.setUpdatedAt(LocalDateTime.now());
+        return ticketRepository.save(existing);
     }
 
-    public void deleteTicket(String id) {
+    public void deleteTicket(String id, String callerEmail, String callerRole) {
+        Ticket existing = ticketRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket not found: " + id));
+
+        boolean isAdmin = "ROLE_ADMIN".equals(callerRole);
+        boolean isCreator = callerEmail.equals(existing.getCreatedBy());
+        if (!isAdmin && !isCreator) {
+            throw new ForbiddenException("You can only delete your own tickets.");
+        }
+        if (!isAdmin && !"OPEN".equals(existing.getStatus())) {
+            throw new ForbiddenException("Tickets can only be deleted while in OPEN status.");
+        }
+
         ticketRepository.deleteById(id);
     }
 

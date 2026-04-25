@@ -198,14 +198,46 @@ public class TicketController {
     }
 
     @PutMapping("/{id}")
-    public Ticket updateTicket(@PathVariable String id, @RequestBody Ticket ticket) {
-        return ticketService.updateTicket(id, ticket);
+    public ResponseEntity<Object> updateTicket(
+            @PathVariable String id,
+            @RequestBody TicketCreateDTO dto,
+            Authentication auth) {
+
+        String callerEmail = auth.getName();
+        String callerRole = auth.getAuthorities().stream()
+                .map(a -> a.getAuthority())
+                .findFirst()
+                .orElse("ROLE_USER");
+        try {
+            Ticket updated = ticketService.updateTicket(id, dto, callerEmail, callerRole);
+            return ResponseEntity.ok(updated);
+        } catch (ForbiddenException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteTicket(@PathVariable String id) {
-        ticketService.deleteTicket(id);
+    public ResponseEntity<Object> deleteTicket(
+            @PathVariable String id,
+            Authentication auth) {
+
+        String callerEmail = auth.getName();
+        String callerRole = auth.getAuthorities().stream()
+                .map(a -> a.getAuthority())
+                .findFirst()
+                .orElse("ROLE_USER");
+        try {
+            ticketService.deleteTicket(id, callerEmail, callerRole);
+            return ResponseEntity.noContent().build();
+        } catch (ForbiddenException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 
     /**

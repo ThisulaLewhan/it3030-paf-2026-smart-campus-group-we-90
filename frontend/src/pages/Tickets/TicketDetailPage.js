@@ -65,6 +65,18 @@ function TicketDetailPage() {
   const fileInputRef = useRef(null);
   const [uploadMsg, setUploadMsg] = useState("");
 
+  // Edit ticket
+  const [editMode, setEditMode] = useState(false);
+  const [editForm, setEditForm] = useState({
+    title: "", category: "", description: "", priority: "",
+    location: "", resourceId: "", preferredContact: "",
+  });
+  const [editMsg, setEditMsg] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  // Delete ticket
+  const [deleting, setDeleting] = useState(false);
+
   // Attachment blob URLs for thumbnail/lightbox display
   const [blobUrls, setBlobUrls] = useState({});
   const [loadingBlobs, setLoadingBlobs] = useState(false);
@@ -94,6 +106,21 @@ function TicketDetailPage() {
   }, [id, role]);
 
   useEffect(() => { loadAll(); }, [loadAll]);
+
+  // Pre-fill edit form whenever ticket data changes
+  useEffect(() => {
+    if (ticket) {
+      setEditForm({
+        title: ticket.title || "",
+        category: ticket.category || "",
+        description: ticket.description || "",
+        priority: ticket.priority || "",
+        location: ticket.location || "",
+        resourceId: ticket.resourceId || "",
+        preferredContact: ticket.preferredContact || "",
+      });
+    }
+  }, [ticket]);
 
   useEffect(() => {
     if (role !== "ADMIN") return;
@@ -261,11 +288,43 @@ function TicketDetailPage() {
     }
   }
 
+  // ── Edit ticket ───────────────────────────────────────────────────────────
+  async function handleEditSubmit(e) {
+    e.preventDefault();
+    setEditMsg("");
+    setSaving(true);
+    try {
+      const res = await ticketService.updateTicket(id, editForm);
+      setTicket(res.data);
+      setEditMode(false);
+      setToast("Ticket updated successfully.");
+    } catch (err) {
+      setEditMsg(err.response?.data ?? "Failed to update ticket.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  // ── Delete ticket ─────────────────────────────────────────────────────────
+  async function handleDelete() {
+    if (!window.confirm("Are you sure you want to delete this ticket? This cannot be undone.")) return;
+    setDeleting(true);
+    try {
+      await ticketService.deleteTicket(id);
+      navigate("/tickets");
+    } catch (err) {
+      setDeleting(false);
+      setToast(err.response?.data ?? "Failed to delete ticket.");
+    }
+  }
+
   // ── Helpers ───────────────────────────────────────────────────────────────
   const isAdmin      = role === "ADMIN";
   const isTechnician = role === "TECHNICIAN";
   const canAdvanceStatus = isAdmin || isTechnician;
   const canViewAttachments = isAdmin || (isTechnician && ticket?.assignedTechnician === userEmail);
+  const canEditTicket   = ticket?.status === "OPEN" && userEmail === ticket?.createdBy;
+  const canDeleteTicket = (ticket?.status === "OPEN" && userEmail === ticket?.createdBy) || isAdmin;
   const allowedNextStatuses = ticket
     ? (isAdmin ? ADMIN_TRANSITIONS[ticket.status] ?? [] : TECH_TRANSITIONS[ticket.status] ?? [])
     : [];
@@ -295,7 +354,119 @@ function TicketDetailPage() {
             </span>
           )}
         </div>
+        {(canEditTicket || canDeleteTicket) && (
+          <div className="detail-header-actions">
+            {canEditTicket && (
+              <button
+                className="btn btn-secondary btn-sm"
+                onClick={() => { setEditMode((m) => !m); setEditMsg(""); }}
+              >
+                {editMode ? "Cancel Edit" : "Edit Ticket"}
+              </button>
+            )}
+            {canDeleteTicket && (
+              <button
+                className="btn btn-danger btn-sm"
+                onClick={handleDelete}
+                disabled={deleting}
+              >
+                {deleting ? "Deleting…" : "Delete Ticket"}
+              </button>
+            )}
+          </div>
+        )}
       </div>
+
+      {/* ── Edit ticket form (creator, OPEN status only) ── */}
+      {editMode && canEditTicket && (
+        <div className="page-card detail-card">
+          <h2>Edit Ticket</h2>
+          <form onSubmit={handleEditSubmit}>
+            <div className="form-group">
+              <label>Title <span className="required">*</span></label>
+              <input
+                type="text"
+                value={editForm.title}
+                onChange={(e) => setEditForm((f) => ({ ...f, title: e.target.value }))}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label>Category</label>
+              <select
+                value={editForm.category}
+                onChange={(e) => setEditForm((f) => ({ ...f, category: e.target.value }))}
+              >
+                <option value="">— select —</option>
+                <option value="MAINTENANCE">Maintenance</option>
+                <option value="IT_SUPPORT">IT Support</option>
+                <option value="CLEANING">Cleaning</option>
+                <option value="SECURITY">Security</option>
+                <option value="OTHER">Other</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label>Priority</label>
+              <select
+                value={editForm.priority}
+                onChange={(e) => setEditForm((f) => ({ ...f, priority: e.target.value }))}
+              >
+                <option value="">— select —</option>
+                <option value="LOW">Low</option>
+                <option value="MEDIUM">Medium</option>
+                <option value="HIGH">High</option>
+                <option value="URGENT">Urgent</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label>Description <span className="required">*</span></label>
+              <textarea
+                value={editForm.description}
+                onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))}
+                required
+                rows={4}
+              />
+            </div>
+            <div className="form-group">
+              <label>Location</label>
+              <input
+                type="text"
+                value={editForm.location}
+                onChange={(e) => setEditForm((f) => ({ ...f, location: e.target.value }))}
+              />
+            </div>
+            <div className="form-group">
+              <label>Resource ID</label>
+              <input
+                type="text"
+                value={editForm.resourceId}
+                onChange={(e) => setEditForm((f) => ({ ...f, resourceId: e.target.value }))}
+              />
+            </div>
+            <div className="form-group">
+              <label>Preferred Contact</label>
+              <input
+                type="text"
+                value={editForm.preferredContact}
+                onChange={(e) => setEditForm((f) => ({ ...f, preferredContact: e.target.value }))}
+              />
+            </div>
+            {editMsg && <p className="form-msg error">{editMsg}</p>}
+            <div style={{ marginTop: "0.75rem", display: "flex", gap: "0.5rem" }}>
+              <button type="submit" className="btn btn-primary" disabled={saving}>
+                {saving ? "Saving…" : "Save Changes"}
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => { setEditMode(false); setEditMsg(""); }}
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       {/* ── Details grid ── */}
       <div className="page-card detail-card">

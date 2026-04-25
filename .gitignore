@@ -15,3 +15,7 @@ backend/src/main/resources/application-local.properties
 # IDE folders
 .idea/
 *.iml
+
+# Ignore downloaded maven binaries
+backend/apache-maven-*/
+backend/maven.zip

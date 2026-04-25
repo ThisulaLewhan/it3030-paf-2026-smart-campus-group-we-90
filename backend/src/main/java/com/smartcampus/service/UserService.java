@@ -42,7 +42,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    private User getCurrentlyAuthenticatedUser() {
+    public User getCurrentlyAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || authentication.getPrincipal() == null) {
             throw new com.smartcampus.exception.ForbiddenException("No authenticated user available for this request.");

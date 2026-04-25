@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 
 public class UpdateRoleRequestDto {
 
-    @NotNull(message = "Role must be explicitly provided (e.g., USER or ADMIN)")
+    @NotNull(message = "Role must be explicitly provided (e.g., USER, TECHNICIAN, or ADMIN)")
     private Role role;
 
     public UpdateRoleRequestDto() {

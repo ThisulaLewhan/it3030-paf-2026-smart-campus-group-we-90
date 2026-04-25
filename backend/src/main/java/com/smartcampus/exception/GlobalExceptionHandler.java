@@ -1,5 +1,6 @@
 package com.smartcampus.exception;
 
+
 import com.smartcampus.dto.ErrorResponseDto;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponseDto> handleBadRequest(IllegalArgumentException ex) {
         return buildError(HttpStatus.BAD_REQUEST, "Bad Request", ex.getMessage());
+    }
+
+    // Handles state conflicts (e.g., booking time overlaps, invalid state transitions)
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ErrorResponseDto> handleConflict(IllegalStateException ex) {
+        return buildError(HttpStatus.CONFLICT, "Conflict", ex.getMessage());
     }
 
     // Native Spring Security hook for busted Logins/JWTs (Maps to 401)
@@ -67,6 +74,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDto> handleGeneric(Exception ex) {
         return buildError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", "An unexpected critical fault occurred.");
+    }
+
+    // Handles faulty input formats natively
+    @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponseDto> handleHttpMessageNotReadable(org.springframework.http.converter.HttpMessageNotReadableException ex) {
+        return buildError(HttpStatus.BAD_REQUEST, "Bad Request", "Malformed JSON request or invalid data type (e.g. invalid enum value)");
     }
 
     // Format builder

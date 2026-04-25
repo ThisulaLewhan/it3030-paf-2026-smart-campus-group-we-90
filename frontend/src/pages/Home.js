@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useMemo } from "react";
 import { useAuth } from "../context/AuthContext";
+import TechnicianDashboardPage from "./Technician/TechnicianDashboardPage";
 
 // SVG icon components for dashboard cards
 const cardIcons = {
@@ -102,6 +103,10 @@ function Home() {
 
     return baseCards;
   }, [user?.role]);
+
+  if (user?.role === "TECHNICIAN") {
+    return <TechnicianDashboardPage />;
+  }
 
   return (
     <section className="dashboard-page">

@@ -1,43 +1,40 @@
-package com.smartcampus.entity;
+package com.smartcampus.dto;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
-import org.springframework.data.mongodb.core.mapping.Document;
-
+import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
-@Document(collection = "bookings")
-public class Booking {
+public class BookingRequestDTO {
 
-    @Id
-    private String id;
-
+    @NotBlank(message = "Resource ID is required")
     private String resourceId;
+
+    @NotBlank(message = "User ID is required")
     private String userId;
+
+    @NotNull(message = "Date is required")
+    @FutureOrPresent(message = "Date must be in the present or future")
     private LocalDate date;
+
+    @NotNull(message = "Start time is required")
     private LocalTime startTime;
+
+    @NotNull(message = "End time is required")
     private LocalTime endTime;
+
+    @NotBlank(message = "Purpose is required")
     private String purpose;
+
+    @NotNull(message = "Expected attendees is required")
     private Integer expectedAttendees;
+
     private List<String> attendees;
-    private BookingStatus status;
-    private String rejectionReason;
 
-    @Transient
-    private String userName;
-
-    @Transient
-    private String userEmail;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
+    // Getters and Setters
 
     public String getResourceId() {
         return resourceId;
@@ -103,35 +100,11 @@ public class Booking {
         this.attendees = attendees;
     }
 
-    public BookingStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(BookingStatus status) {
-        this.status = status;
-    }
-
-    public String getRejectionReason() {
-        return rejectionReason;
-    }
-
-    public void setRejectionReason(String rejectionReason) {
-        this.rejectionReason = rejectionReason;
-    }
-
-    public String getUserName() {
-        return userName;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-
-    public String getUserEmail() {
-        return userEmail;
-    }
-
-    public void setUserEmail(String userEmail) {
-        this.userEmail = userEmail;
+    @AssertTrue(message = "Start time must be before end time")
+    public boolean isTimeValid() {
+        if (startTime == null || endTime == null) {
+            return true; // Let @NotNull handle this
+        }
+        return startTime.isBefore(endTime);
     }
 }

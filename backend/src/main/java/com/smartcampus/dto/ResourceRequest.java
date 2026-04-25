@@ -1,54 +1,39 @@
-package com.smartcampus.entity;
+package com.smartcampus.dto;
+
+import com.smartcampus.entity.ResourceStatus;
+import com.smartcampus.entity.ResourceType;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.time.LocalTime;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection = "resources")
-public class Resource {
+public class ResourceRequest {
 
-    @Id
-    private String id;
-
+    @NotBlank(message = "Name is required")
+    @Size(min = 2, max = 100, message = "Name must be between 2 and 100 characters")
     private String name;
 
+    @NotNull(message = "Type is required")
     private ResourceType type;
 
+    @NotNull(message = "Capacity is required")
+    @Min(value = 1, message = "Capacity must be greater than 0")
     private Integer capacity;
 
+    @NotBlank(message = "Location is required")
+    @Size(min = 2, max = 200, message = "Location must be between 2 and 200 characters")
     private String location;
 
     private LocalTime availabilityStart;
 
     private LocalTime availabilityEnd;
 
+    @NotNull(message = "Status is required")
     private ResourceStatus status;
 
-    // ── Constructors ─────────────────────────────────────────────────────────
-
-    public Resource() {
-    }
-
-    public Resource(String name, ResourceType type, Integer capacity, String location,
-                    LocalTime availabilityStart, LocalTime availabilityEnd, ResourceStatus status) {
-        this.name = name;
-        this.type = type;
-        this.capacity = capacity;
-        this.location = location;
-        this.availabilityStart = availabilityStart;
-        this.availabilityEnd = availabilityEnd;
-        this.status = status;
-    }
-
     // ── Getters & Setters ─────────────────────────────────────────────────────
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public String getName() {
         return name;

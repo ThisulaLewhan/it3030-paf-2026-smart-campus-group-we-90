@@ -2,9 +2,10 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import ProfileSettingsForm from '../../components/ProfileSettingsForm';
+import TechnicianProfilePage from '../Technician/TechnicianProfilePage';
 import './ProfilePage.css';
 
-const ProfilePage = () => {
+const StandardProfilePage = () => {
   const { user, loadCurrentUser, logout } = useAuth();
   const navigate = useNavigate();
   const [isRefreshing, setIsRefreshing] = useState(true);
@@ -154,6 +155,16 @@ const ProfilePage = () => {
       </div>
     </div>
   );
+};
+
+const ProfilePage = () => {
+  const { user } = useAuth();
+
+  if (user?.role === 'TECHNICIAN') {
+    return <TechnicianProfilePage />;
+  }
+
+  return <StandardProfilePage />;
 };
 
 export default ProfilePage;

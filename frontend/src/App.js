@@ -41,14 +41,7 @@ function App() {
             <Route path="/" element={<MainLayout />}>
               <Route path="dashboard" element={<Home />} />
               <Route path="profile" element={<ProfilePage />} />
-              <Route
-                path="resources"
-                element={
-                  <ProtectedRoute allowedRoles={["ADMIN"]}>
-                    <ResourcesPage />
-                  </ProtectedRoute>
-                }
-              />
+              <Route path="resources" element={<ResourcesPage />} />
               <Route path="bookings" element={<BookingsPage />} />
               <Route path="tickets" element={<TicketListPage />} />
               <Route path="tickets/new" element={<CreateTicketPage />} />

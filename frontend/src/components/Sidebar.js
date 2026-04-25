@@ -64,11 +64,11 @@ const moduleLinks = [
   // Services section
   { to: "/bookings", label: "Bookings", icon: "bookings", section: "Services" },
   { to: "/tickets", label: "Support Tickets", icon: "tickets", section: "Services" },
+  { to: "/resources", label: "Campus Resources", icon: "resources", section: "Services" },
 
   // Administration section
   // Explicitly restricted structural elements that require massive privilege
   { to: "/admin/users", label: "User Roles", icon: "admin", allowedRoles: ["ADMIN"], section: "Admin" },
-  { to: "/resources", label: "Resources", icon: "resources", allowedRoles: ["ADMIN"], section: "Admin" },
 ];
 
 function Sidebar() {

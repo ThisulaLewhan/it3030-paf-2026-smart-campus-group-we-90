@@ -194,7 +194,8 @@ public class TicketService {
     }
 
     public Ticket updateTicket(String id, Ticket updatedTicket) {
-        Ticket existingTicket = getTicketById(id);
+        Ticket existingTicket = ticketRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket not found: " + id));
         existingTicket.setTitle(updatedTicket.getTitle());
         existingTicket.setDescription(updatedTicket.getDescription());
         existingTicket.setPriority(updatedTicket.getPriority());
@@ -221,7 +222,8 @@ public class TicketService {
      */
     public Ticket transitionStatus(String id, TicketStatusUpdateDTO dto,
                                     String requesterEmail, String requesterRole) {
-        Ticket ticket = getTicketById(id);
+        Ticket ticket = ticketRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket not found: " + id));
 
         TicketStatus current;
         TicketStatus next;

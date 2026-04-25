@@ -1,21 +1,17 @@
 package com.smartcampus.entity;
 
-import jakarta.persistence.*;
 import java.time.LocalTime;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity
-@Table(name = "resources")
+@Document(collection = "resources")
 public class Resource {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
-    @Column(nullable = false)
     private String name;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private ResourceType type;
 
     private Integer capacity;
@@ -26,8 +22,6 @@ public class Resource {
 
     private LocalTime availabilityEnd;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private ResourceStatus status;
 
     // ── Constructors ─────────────────────────────────────────────────────────
@@ -48,11 +42,11 @@ public class Resource {
 
     // ── Getters & Setters ─────────────────────────────────────────────────────
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

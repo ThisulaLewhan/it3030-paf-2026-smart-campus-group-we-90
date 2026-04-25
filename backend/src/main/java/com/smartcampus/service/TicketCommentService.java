@@ -7,6 +7,7 @@ import com.smartcampus.exception.ResourceNotFoundException;
 import com.smartcampus.repository.IncidentTicketRepository;
 import com.smartcampus.repository.TicketCommentRepository;
 import com.smartcampus.repository.TicketRepository;
+import com.smartcampus.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,13 +21,19 @@ public class TicketCommentService {
     private final TicketCommentRepository commentRepository;
     private final IncidentTicketRepository incidentTicketRepository;
     private final TicketRepository ticketRepository;
+    private final NotificationService notificationService;
+    private final UserRepository userRepository;
 
     public TicketCommentService(TicketCommentRepository commentRepository,
                                  IncidentTicketRepository incidentTicketRepository,
-                                 TicketRepository ticketRepository) {
+                                 TicketRepository ticketRepository,
+                                 NotificationService notificationService,
+                                 UserRepository userRepository) {
         this.commentRepository = commentRepository;
         this.incidentTicketRepository = incidentTicketRepository;
         this.ticketRepository = ticketRepository;
+        this.notificationService = notificationService;
+        this.userRepository = userRepository;
     }
 
     // ------------------------------------------------------------------ //
@@ -37,7 +44,7 @@ public class TicketCommentService {
 
     public TicketComment addCommentToTicket(String ticketId, CommentDTO dto,
                                              String authorId, String authorRole) {
-        ticketRepository.findById(ticketId)
+        com.smartcampus.entity.Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket not found: " + ticketId));
 
         LocalDateTime now = LocalDateTime.now();
@@ -49,7 +56,22 @@ public class TicketCommentService {
         comment.setCreatedAt(now);
         comment.setUpdatedAt(now);
 
-        return commentRepository.save(comment);
+        TicketComment saved = commentRepository.save(comment);
+
+        // Notify the ticket creator about the new comment (unless they wrote it themselves)
+        if (ticket.getCreatedBy() != null && !ticket.getCreatedBy().equals(authorId)) {
+            // authorId could be email or user id, resolve commenter name for display
+            String commenterName = userRepository.findById(authorId)
+                    .map(u -> u.getName())
+                    .orElse(userRepository.findByEmail(authorId)
+                            .map(u -> u.getName())
+                            .orElse("Someone"));
+            userRepository.findByEmail(ticket.getCreatedBy()).ifPresent(ticketOwner ->
+                notificationService.notifyNewComment(ticketOwner, commenterName, ticket.getTitle())
+            );
+        }
+
+        return saved;
     }
 
     public List<TicketComment> getCommentsForTicket(String ticketId) {

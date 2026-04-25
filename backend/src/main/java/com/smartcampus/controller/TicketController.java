@@ -3,12 +3,18 @@ package com.smartcampus.controller;
 import com.smartcampus.dto.CommentDTO;
 import com.smartcampus.dto.TicketCreateDTO;
 import com.smartcampus.dto.TicketStatusUpdateDTO;
+import com.smartcampus.entity.Attachment;
 import com.smartcampus.entity.Ticket;
 import com.smartcampus.entity.TicketComment;
+import com.smartcampus.service.AttachmentService;
 import com.smartcampus.service.TicketCommentService;
 import com.smartcampus.service.TicketService;
+import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,8 +24,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/tickets")
@@ -27,10 +36,14 @@ public class TicketController {
 
     private final TicketService ticketService;
     private final TicketCommentService commentService;
+    private final AttachmentService attachmentService;
 
-    public TicketController(TicketService ticketService, TicketCommentService commentService) {
+    public TicketController(TicketService ticketService,
+                             TicketCommentService commentService,
+                             AttachmentService attachmentService) {
         this.ticketService = ticketService;
         this.commentService = commentService;
+        this.attachmentService = attachmentService;
     }
 
     // ---- Basic ticket CRUD ---- //
@@ -45,15 +58,53 @@ public class TicketController {
         return ticketService.getTicketById(id);
     }
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public Ticket createTicket(@RequestBody TicketCreateDTO dto, Authentication auth) {
-        String requesterRole = auth.getAuthorities().stream()
-                .map(a -> a.getAuthority())
-                .findFirst()
-                .orElse("ROLE_USER");
+    /**
+     * POST /api/tickets  (multipart/form-data)
+     * Any authenticated user (USER, ADMIN, TECHNICIAN) can create a ticket.
+     *
+     * Parts:
+     *   - "ticket"  (application/json, required)  — TicketCreateDTO fields
+     *   - "files"   (binary, optional, up to 3)   — jpg/jpeg/png images, max 5 MB each
+     *
+     * Rules enforced:
+     *   - Status is always set to OPEN — never accepted from the client
+     *   - createdBy is set from the JWT token, never from the request body
+     *   - assignedTechnicianId is ignored even if provided — use the assign endpoint instead
+     *
+     * Returns 201 Created on success.
+     * Returns 400 Bad Request for validation errors (missing required fields, file type/size).
+     * Returns 403 Forbidden if the caller is not authenticated.
+     */
+    @PostMapping(consumes = {"multipart/form-data"})
+    public ResponseEntity<Object> createTicket(
+            @RequestPart("ticket") TicketCreateDTO dto,
+            @RequestParam(value = "files", required = false) List<MultipartFile> files,
+            Authentication auth) {
 
-        return ticketService.createTicket(dto, auth.getName(), requesterRole);
+        if (auth == null || !auth.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        try {
+            Ticket ticket = ticketService.createTicket(dto, auth.getName());
+
+            // Upload optional image attachments (max 3, jpg/jpeg/png, max 5 MB each)
+            if (files != null && !files.isEmpty()) {
+                List<MultipartFile> nonEmpty = files.stream()
+                        .filter(f -> f != null && !f.isEmpty())
+                        .collect(Collectors.toList());
+                if (!nonEmpty.isEmpty()) {
+                    attachmentService.uploadAttachmentsForTicket(ticket.getId(), nonEmpty);
+                }
+            }
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(ticket);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("File storage error: " + e.getMessage());
+        }
     }
 
     @PutMapping("/{id}")

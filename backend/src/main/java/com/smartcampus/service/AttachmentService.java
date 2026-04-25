@@ -3,6 +3,7 @@ package com.smartcampus.service;
 import com.smartcampus.entity.Attachment;
 import com.smartcampus.repository.AttachmentRepository;
 import com.smartcampus.repository.IncidentTicketRepository;
+import com.smartcampus.repository.TicketRepository;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -32,14 +33,17 @@ public class AttachmentService {
 
     private final AttachmentRepository attachmentRepository;
     private final IncidentTicketRepository incidentTicketRepository;
+    private final TicketRepository ticketRepository;
 
     @Value("${app.upload.dir:uploads/attachments}")
     private String uploadDir;
 
     public AttachmentService(AttachmentRepository attachmentRepository,
-                              IncidentTicketRepository incidentTicketRepository) {
+                              IncidentTicketRepository incidentTicketRepository,
+                              TicketRepository ticketRepository) {
         this.attachmentRepository = attachmentRepository;
         this.incidentTicketRepository = incidentTicketRepository;
+        this.ticketRepository = ticketRepository;
     }
 
     public List<Attachment> uploadAttachments(String ticketId, List<MultipartFile> files)
@@ -93,6 +97,54 @@ public class AttachmentService {
 
     public List<Attachment> getAttachmentsByTicket(String ticketId) {
         return attachmentRepository.findByTicketId(ticketId);
+    }
+
+    /**
+     * Uploads image attachments for a regular ticket (/api/tickets).
+     * Validates: max 3 total per ticket, jpg/jpeg/png only, max 5 MB each.
+     *
+     * @throws NoSuchElementException   if the ticket does not exist
+     * @throws IllegalArgumentException if count/type/size validation fails
+     * @throws IOException              on file storage errors
+     */
+    public List<Attachment> uploadAttachmentsForTicket(String ticketId, List<MultipartFile> files)
+            throws IOException {
+
+        ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new NoSuchElementException("Ticket not found: " + ticketId));
+
+        long existing = attachmentRepository.countByTicketId(ticketId);
+        if (existing + files.size() > MAX_ATTACHMENTS_PER_TICKET) {
+            throw new IllegalArgumentException(
+                    "A ticket may have at most " + MAX_ATTACHMENTS_PER_TICKET
+                    + " attachments. Currently has " + existing + ".");
+        }
+
+        for (MultipartFile file : files) {
+            validateFile(file);
+        }
+
+        Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+        Files.createDirectories(uploadPath);
+
+        List<Attachment> saved = new java.util.ArrayList<>();
+        for (MultipartFile file : files) {
+            String originalName = StringUtils.cleanPath(file.getOriginalFilename());
+            String extension = getExtension(originalName);
+            String storedName = UUID.randomUUID().toString() + "." + extension;
+            Path targetPath = uploadPath.resolve(storedName);
+            Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+
+            Attachment attachment = new Attachment();
+            attachment.setTicketId(ticketId);
+            attachment.setFilename(originalName);
+            attachment.setStoredPath(targetPath.toString());
+            attachment.setContentType(file.getContentType());
+            attachment.setSizeBytes(file.getSize());
+            attachment.setUploadedAt(LocalDateTime.now());
+            saved.add(attachmentRepository.save(attachment));
+        }
+        return saved;
     }
 
     private void validateFile(MultipartFile file) {

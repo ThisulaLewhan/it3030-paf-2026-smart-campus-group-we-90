@@ -10,7 +10,7 @@ public class TicketCreateDTO {
     private String location;
     private String preferredContact;
     /** Optional — only ADMIN may set this at creation time. */
-    private String assignedTechnicianId;
+    // assignedTechnicianId is intentionally omitted — assignment is handled via a separate endpoint
 
     public String getTitle() {
         return title;
@@ -66,13 +66,5 @@ public class TicketCreateDTO {
 
     public void setPreferredContact(String preferredContact) {
         this.preferredContact = preferredContact;
-    }
-
-    public String getAssignedTechnicianId() {
-        return assignedTechnicianId;
-    }
-
-    public void setAssignedTechnicianId(String assignedTechnicianId) {
-        this.assignedTechnicianId = assignedTechnicianId;
     }
 }

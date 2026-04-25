@@ -160,6 +160,11 @@ public class TicketService {
         Ticket ticket = ticketRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket not found: " + id));
 
+        if (!"OPEN".equals(ticket.getStatus())) {
+            throw new ForbiddenException(
+                    "Technician cannot be changed once the ticket is in '" + ticket.getStatus() + "' status.");
+        }
+
         User technician = userRepository.findById(technicianId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "User not found: " + technicianId));
@@ -286,7 +291,7 @@ public class TicketService {
 
             case RESOLVED:
                 boolean isAdmin   = "ROLE_ADMIN".equals(requesterRole);
-                boolean isAssigned = requesterEmail != null && requesterEmail.equals(ticket.getAssignedTo());
+                boolean isAssigned = requesterEmail != null && requesterEmail.equals(ticket.getAssignedTechnician());
                 if (!isAdmin && !isAssigned) {
                     throw new ForbiddenException("Only the assigned technician or ADMIN can resolve a ticket.");
                 }

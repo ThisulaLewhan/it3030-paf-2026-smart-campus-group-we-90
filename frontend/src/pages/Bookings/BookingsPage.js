@@ -88,6 +88,17 @@ function BookingsPage() {
     date: ''
   });
 
+  // ── Reject modal state ──
+  const [rejectModal, setRejectModal] = useState(null); // { bookingId }
+  const [rejectReason, setRejectReason] = useState('');
+  const [rejectError, setRejectError] = useState('');
+  const [rejecting, setRejecting] = useState(false);
+
+  // ── Cancel confirm modal state ──
+  const [cancelModal, setCancelModal] = useState(null); // { bookingId }
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelError, setCancelError] = useState('');
+
   // ── Calendar state ──
   const [calDate, setCalDate] = useState(new Date());
 
@@ -232,20 +243,45 @@ function BookingsPage() {
 
   const handleApprove = async (id) => {
     try { await bookingService.approve(id); fetchBookings(); }
-    catch (err) { alert("Failed to approve: " + (err.response?.data?.message || err.message)); }
+    catch (err) { setError("Failed to approve: " + (err.response?.data?.message || err.message)); }
   };
 
-  const handleReject = async (id) => {
-    const reason = prompt("Please provide a reason for rejection:");
-    if (!reason) return;
-    try { await bookingService.reject(id, reason); fetchBookings(); }
-    catch (err) { alert("Failed to reject: " + (err.response?.data?.message || err.message)); }
+  const openRejectModal = (bookingId) => {
+    setRejectModal({ bookingId });
+    setRejectReason('');
+    setRejectError('');
+  };
+  const closeRejectModal = () => { setRejectModal(null); setRejecting(false); };
+
+  const handleRejectConfirm = async () => {
+    if (!rejectReason.trim()) { setRejectError('Please provide a reason for rejection.'); return; }
+    setRejecting(true);
+    try {
+      await bookingService.reject(rejectModal.bookingId, rejectReason.trim());
+      closeRejectModal();
+      fetchBookings();
+    } catch (err) {
+      setRejectError("Failed to reject: " + (err.response?.data?.message || err.message));
+      setRejecting(false);
+    }
   };
 
-  const handleCancel = async (id) => {
-    if (!window.confirm("Are you sure you want to cancel this booking?")) return;
-    try { await bookingService.cancel(id); fetchBookings(); }
-    catch (err) { alert("Failed to cancel: " + (err.response?.data?.message || err.message)); }
+  const openCancelModal = (bookingId) => {
+    setCancelModal({ bookingId });
+    setCancelError('');
+  };
+  const closeCancelModal = () => { setCancelModal(null); setCancelling(false); };
+
+  const handleCancelConfirm = async () => {
+    setCancelling(true);
+    try {
+      await bookingService.cancel(cancelModal.bookingId);
+      closeCancelModal();
+      fetchBookings();
+    } catch (err) {
+      setCancelError("Failed to cancel: " + (err.response?.data?.message || err.message));
+      setCancelling(false);
+    }
   };
 
   const handleResourceSelect = (resourceId) => {
@@ -486,11 +522,11 @@ function BookingsPage() {
                         {isAdmin && booking.status === 'PENDING' && (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', width: 'fit-content' }}>
                             <button onClick={() => handleApprove(booking.id)} className="bk-action-btn approve" style={{ margin: 0 }}>Approve</button>
-                            <button onClick={() => handleReject(booking.id)} className="bk-action-btn reject" style={{ margin: 0 }}>Reject</button>
+                            <button onClick={() => openRejectModal(booking.id)} className="bk-action-btn reject" style={{ margin: 0 }}>Reject</button>
                           </div>
                         )}
                         {!isAdmin && booking.status === 'APPROVED' && (
-                          <button onClick={() => handleCancel(booking.id)} className="bk-action-btn cancel">Cancel</button>
+                          <button onClick={() => openCancelModal(booking.id)} className="bk-action-btn cancel">Cancel</button>
                         )}
                         {(booking.status === 'REJECTED' || booking.status === 'CANCELLED' || (!isAdmin && booking.status === 'PENDING')) && (
                           <span style={{ color: 'var(--color-slate-400)', fontSize: '0.82rem' }}>—</span>
@@ -568,6 +604,49 @@ function BookingsPage() {
           </div>
         </div>
       </div>
+      {/* ── Reject Modal ── */}
+      {rejectModal && (
+        <div className="modal-overlay" onClick={closeRejectModal}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <h2>Reject Booking</h2>
+            <p className="modal-subtitle">Please provide a reason for rejecting this booking request.</p>
+            <div className="form-group">
+              <label>Rejection Reason <span className="required">*</span></label>
+              <textarea
+                rows={3}
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                placeholder="e.g. Resource unavailable on this date, conflicting event..."
+                autoFocus
+              />
+            </div>
+            {rejectError && <p className="field-error">{rejectError}</p>}
+            <div className="modal-actions">
+              <button className="btn btn-secondary" onClick={closeRejectModal} disabled={rejecting}>Cancel</button>
+              <button className="btn btn-danger" onClick={handleRejectConfirm} disabled={rejecting}>
+                {rejecting ? 'Rejecting…' : 'Confirm Rejection'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Cancel Confirm Modal ── */}
+      {cancelModal && (
+        <div className="modal-overlay" onClick={closeCancelModal}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <h2>Cancel Booking</h2>
+            <p className="modal-subtitle">Are you sure you want to cancel this booking? This action cannot be undone.</p>
+            {cancelError && <p className="field-error">{cancelError}</p>}
+            <div className="modal-actions">
+              <button className="btn btn-secondary" onClick={closeCancelModal} disabled={cancelling}>Keep Booking</button>
+              <button className="btn btn-danger" onClick={handleCancelConfirm} disabled={cancelling}>
+                {cancelling ? 'Cancelling…' : 'Yes, Cancel'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

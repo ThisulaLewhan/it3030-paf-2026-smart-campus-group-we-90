@@ -341,13 +341,8 @@ const StandardProfilePage = () => {
 };
 
 const ProfilePage = () => {
-  const { user } = useAuth();
-
-  if (user?.role === 'TECHNICIAN') {
-    return <TechnicianProfilePage />;
-  }
-
   return <StandardProfilePage />;
 };
 
 export default ProfilePage;
+

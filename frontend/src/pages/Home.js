@@ -122,7 +122,7 @@ function Home() {
         <div className="dashboard-role-panel">
           <span className="dashboard-role-label">Signed in as</span>
           <strong className="dashboard-role-value">{formattedRole}</strong>
-          <Link className="dashboard-role-link" to="/security">
+          <Link className="dashboard-role-link" to="/profile">
             Account Security →
           </Link>
         </div>

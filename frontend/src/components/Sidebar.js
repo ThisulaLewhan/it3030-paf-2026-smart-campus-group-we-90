@@ -116,11 +116,6 @@ function Sidebar() {
                 >
                   {icons[link.icon]}
                   <span>{link.label}</span>
-
-                  {/* Optional: Visually tag heavily restricted elements so Admins know they are in a protected area */}
-                  {link.allowedRoles && link.allowedRoles.includes('ADMIN') && (
-                    <span className="sidebar-admin-badge">Admin</span>
-                  )}
                 </NavLink>
               </li>
             ))}

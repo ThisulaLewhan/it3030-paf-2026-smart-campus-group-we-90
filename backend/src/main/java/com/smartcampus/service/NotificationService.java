@@ -13,10 +13,12 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final AuthService authService;
+    private final com.smartcampus.repository.UserRepository userRepository;
 
-    public NotificationService(NotificationRepository notificationRepository, AuthService authService) {
+    public NotificationService(NotificationRepository notificationRepository, AuthService authService, com.smartcampus.repository.UserRepository userRepository) {
         this.notificationRepository = notificationRepository;
         this.authService = authService;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -25,6 +27,18 @@ public class NotificationService {
     public Notification createNotification(User targetUser, String message, NotificationType type) {
         Notification notification = new Notification(targetUser, message, type);
         return notificationRepository.save(notification);
+    }
+
+    /**
+     * Blasts a notification to all admins in the system.
+     */
+    public void notifyAdmins(String message, NotificationType type) {
+        List<User> admins = userRepository.findByRole(com.smartcampus.entity.Role.ADMIN);
+        List<Notification> notifications = new ArrayList<>();
+        for (User admin : admins) {
+            notifications.add(new Notification(admin, message, type));
+        }
+        notificationRepository.saveAll(notifications);
     }
 
     /**

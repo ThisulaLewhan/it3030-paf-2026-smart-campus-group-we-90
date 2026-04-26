@@ -90,7 +90,16 @@ public class BookingService {
         // Set status to PENDING
         booking.setStatus(BookingStatus.PENDING);
         
-        return bookingRepository.save(booking);
+        Booking saved = bookingRepository.save(booking);
+
+        String resName = resourceRepository.findById(saved.getResourceId())
+                .map(r -> r.getName()).orElse(saved.getResourceId());
+        notificationService.notifyAdmins(
+            String.format("New booking request submitted for resource '%s' on %s.", resName, saved.getDate()),
+            com.smartcampus.entity.NotificationType.BOOKING
+        );
+
+        return saved;
     }
 
     public Booking updateBooking(String id, BookingRequestDTO updatedBooking) {

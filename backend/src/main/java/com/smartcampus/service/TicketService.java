@@ -138,7 +138,14 @@ public class TicketService {
         ticket.setCreatedAt(now);
         ticket.setUpdatedAt(now);
 
-        return ticketRepository.save(ticket);
+        Ticket saved = ticketRepository.save(ticket);
+
+        notificationService.notifyAdmins(
+            String.format("New ticket '%s' created by %s.", saved.getTitle(), creatorEmail),
+            NotificationType.TICKET
+        );
+
+        return saved;
     }
 
     /**

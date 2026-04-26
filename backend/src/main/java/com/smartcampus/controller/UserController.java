@@ -78,4 +78,11 @@ public class UserController {
         User updatedUser = userService.updateCurrentUserProfile(request);
         return ResponseEntity.ok(authService.toUserDto(updatedUser));
     }
+
+    @GetMapping("/temp-make-tech")
+    public ResponseEntity<String> makeTech() {
+        User user = userService.getCurrentlyAuthenticatedUser();
+        userService.updateUserRole(user.getId(), com.smartcampus.entity.Role.TECHNICIAN);
+        return ResponseEntity.ok("Made tech");
+    }
 }

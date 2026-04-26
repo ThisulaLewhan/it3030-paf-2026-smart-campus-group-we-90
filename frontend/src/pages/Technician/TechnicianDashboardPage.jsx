@@ -75,7 +75,7 @@ function TechnicianDashboardPage() {
         setError("");
 
         const [ticketsResponse, notificationsResponse] = await Promise.all([
-          ticketService.getAll(),
+          ticketService.getTickets(),
           notificationService.getMyNotifications(),
         ]);
 
@@ -116,7 +116,7 @@ function TechnicianDashboardPage() {
     ].filter(Boolean);
 
     return tickets.filter((ticket) =>
-      technicianIdentifiers.includes(normalizeText(ticket.assignedTo))
+      technicianIdentifiers.includes(normalizeText(ticket.assignedTechnician))
     );
   }, [tickets, user?.email, user?.id, user?.name]);
 

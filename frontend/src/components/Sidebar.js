@@ -62,7 +62,7 @@ const moduleLinks = [
   { to: "/notifications/preferences", label: "Notification Settings", icon: "activity", section: "General" },
 
   // Services section
-  { to: "/bookings", label: "Bookings", icon: "bookings", section: "Services" },
+  { to: "/bookings", label: "Bookings", icon: "bookings", section: "Services", allowedRoles: ["ADMIN", "USER"] },
   { to: "/tickets", label: "Support Tickets", icon: "tickets", section: "Services" },
   { to: "/resources", label: "Campus Resources", icon: "resources", section: "Services" },
 

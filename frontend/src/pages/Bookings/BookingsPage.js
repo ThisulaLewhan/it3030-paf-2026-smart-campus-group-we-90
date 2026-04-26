@@ -147,7 +147,7 @@ function BookingsPage() {
     return map;
   }, [resources]);
 
-  const getResourceName = (id) => resourceMap[id] || id;
+  const getResourceName = (booking) => booking.resourceName || resourceMap[booking.resourceId] || booking.resourceId;
   // ── Upcoming bookings (next 3 approved/pending) ──
   const upcoming = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
@@ -448,7 +448,7 @@ function BookingsPage() {
                             <CalendarIcon />
                           </div>
                           <div>
-                            <div className="bk-table-resource-name">{getResourceName(booking.resourceId)}</div>
+                            <div className="bk-table-resource-name">{getResourceName(booking)}</div>
                             {isAdmin && (
                               <div className="bk-table-resource-type">
                                 {booking.userName ? booking.userName : `User: ${booking.userId?.substring(0, 8)}...`}
@@ -519,7 +519,7 @@ function BookingsPage() {
                   <div key={b.id} className="bk-upcoming-item">
                     <div className="bk-upcoming-icon"><CalendarIcon /></div>
                     <div className="bk-upcoming-details">
-                      <div className="bk-upcoming-name">{getResourceName(b.resourceId)}</div>
+                      <div className="bk-upcoming-name">{getResourceName(b)}</div>
                       <div className="bk-upcoming-time">
                         {formatDate(b.date)} | {formatTime(b.startTime)} - {formatTime(b.endTime)}
                       </div>

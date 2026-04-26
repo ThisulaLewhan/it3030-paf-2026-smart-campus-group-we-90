@@ -38,6 +38,11 @@ public class BookingService {
                 booking.setUserEmail(user.getEmail());
             });
         }
+        if (booking != null && booking.getResourceId() != null) {
+            resourceRepository.findById(booking.getResourceId()).ifPresent(resource -> {
+                booking.setResourceName(resource.getName());
+            });
+        }
         return booking;
     }
 

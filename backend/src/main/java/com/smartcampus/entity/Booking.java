@@ -31,6 +31,9 @@ public class Booking {
     @Transient
     private String userEmail;
 
+    @Transient
+    private String resourceName;
+
     public String getId() {
         return id;
     }
@@ -133,5 +136,13 @@ public class Booking {
 
     public void setUserEmail(String userEmail) {
         this.userEmail = userEmail;
+    }
+
+    public String getResourceName() {
+        return resourceName;
+    }
+
+    public void setResourceName(String resourceName) {
+        this.resourceName = resourceName;
     }
 }

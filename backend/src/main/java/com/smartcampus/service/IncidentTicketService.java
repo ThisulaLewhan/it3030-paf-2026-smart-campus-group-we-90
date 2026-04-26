@@ -50,6 +50,7 @@ public class IncidentTicketService {
         this.mongoTemplate = mongoTemplate;
     }
 
+    // Creates a new incident ticket with OPEN status
     public IncidentTicket createTicket(IncidentTicketDTO dto, String createdBy) {
         IncidentTicket ticket = new IncidentTicket();
         ticket.setTitle(dto.getTitle());
@@ -69,15 +70,18 @@ public class IncidentTicketService {
         return incidentTicketRepository.save(ticket);
     }
 
+    // Retrieves a specific ticket by ID or throws an exception
     public IncidentTicket getTicketById(String id) {
         return incidentTicketRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Incident ticket not found: " + id));
     }
 
+    // Retrieves all incident tickets in the system
     public List<IncidentTicket> getAllTickets() {
         return incidentTicketRepository.findAll();
     }
 
+    // Retrieves all incident tickets created by a specific user
     public List<IncidentTicket> getTicketsByUser(String username) {
         return incidentTicketRepository.findByCreatedBy(username);
     }
@@ -120,6 +124,7 @@ public class IncidentTicketService {
         return mongoTemplate.find(query, IncidentTicket.class);
     }
 
+    // Updates ticket status ensuring valid state transitions (e.g., OPEN -> IN_PROGRESS)
     public IncidentTicket updateStatus(String id, StatusUpdateDTO dto) {
         IncidentTicket ticket = getTicketById(id);
         Status current = ticket.getStatus();
@@ -139,6 +144,7 @@ public class IncidentTicketService {
         return incidentTicketRepository.save(ticket);
     }
 
+    // Assigns a valid technician to a specific ticket
     public IncidentTicket assignTechnician(String ticketId, AssignDTO dto) {
         User technician = userRepository.findById(dto.getTechnicianId())
                 .orElseThrow(() -> new NoSuchElementException(
@@ -150,6 +156,7 @@ public class IncidentTicketService {
         return incidentTicketRepository.save(ticket);
     }
 
+    // Rejects an OPEN ticket and records the rejection reason
     public IncidentTicket rejectTicket(String id, RejectDTO dto) {
         IncidentTicket ticket = getTicketById(id);
 

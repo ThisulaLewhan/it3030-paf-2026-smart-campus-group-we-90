@@ -17,6 +17,7 @@ public class ResourceService {
     @Autowired
     private ResourceRepository resourceRepository;
 
+    // Creates a new resource based on the provided request details
     public Resource createResource(ResourceRequest request) {
         Resource resource = new Resource(
                 request.getName(),
@@ -30,6 +31,7 @@ public class ResourceService {
         return resourceRepository.save(resource);
     }
 
+    // Retrieves all resources and maps them to response DTOs
     public List<ResourceResponse> getAllResources() {
         return resourceRepository.findAll()
                 .stream()
@@ -37,12 +39,14 @@ public class ResourceService {
                 .collect(Collectors.toList());
     }
 
+    // Retrieves a specific resource by ID or throws an exception
     public ResourceResponse getResourceById(String id) {
         Resource resource = resourceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(id));
         return ResourceResponse.from(resource);
     }
 
+    // Updates an existing resource with new details
     public ResourceResponse updateResource(String id, ResourceRequest request) {
         Resource resource = resourceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(id));
@@ -59,12 +63,14 @@ public class ResourceService {
         return ResourceResponse.from(updatedResource);
     }
 
+    // Deletes a specific resource from the database
     public void deleteResource(String id) {
         Resource resource = resourceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(id));
         resourceRepository.delete(resource);
     }
 
+    // Searches and filters resources based on type, capacity, location, and status
     public List<ResourceResponse> searchResources(ResourceType type, Integer capacity, String location, com.smartcampus.entity.ResourceStatus status) {
         String normalizedLocation = location == null ? null : location.trim().toLowerCase();
 

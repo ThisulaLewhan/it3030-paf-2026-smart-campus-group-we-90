@@ -7,7 +7,6 @@ import com.smartcampus.entity.IncidentTicket;
 import com.smartcampus.entity.IncidentTicket.Category;
 import com.smartcampus.entity.IncidentTicket.Priority;
 import com.smartcampus.entity.IncidentTicket.Status;
-import com.smartcampus.entity.User;
 import com.smartcampus.repository.IncidentTicketRepository;
 import com.smartcampus.repository.UserRepository;
 

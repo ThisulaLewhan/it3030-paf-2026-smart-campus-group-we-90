@@ -3,7 +3,6 @@ package com.smartcampus.service;
 import com.smartcampus.dto.BookingRequestDTO;
 import com.smartcampus.entity.Booking;
 import com.smartcampus.entity.BookingStatus;
-import com.smartcampus.entity.User;
 import com.smartcampus.repository.BookingRepository;
 import com.smartcampus.repository.ResourceRepository;
 import com.smartcampus.repository.UserRepository;
@@ -31,6 +30,7 @@ public class BookingService {
         this.notificationService = notificationService;
     }
 
+    // Adds user and resource names to the booking object for frontend display
     private Booking enrichWithUserDetails(Booking booking) {
         if (booking != null && booking.getUserId() != null) {
             userRepository.findById(booking.getUserId()).ifPresent(user -> {
@@ -51,10 +51,12 @@ public class BookingService {
         return bookings;
     }
 
+    // Retrieves all bookings and enriches them with details
     public List<Booking> getAllBookings() {
         return enrichWithUserDetails(bookingRepository.findAll());
     }
 
+    // Searches for bookings matching specific filters (resource, status, date)
     public List<Booking> getFilteredBookings(String resourceId, BookingStatus status, LocalDate date) {
         Booking probe = new Booking();
         if (resourceId != null) probe.setResourceId(resourceId);
@@ -79,6 +81,7 @@ public class BookingService {
         return enrichWithUserDetails(booking);
     }
 
+    // Validates conflicts and creates a new booking with PENDING status
     public Booking createBooking(BookingRequestDTO requestDTO) {
         checkForConflicts(requestDTO.getResourceId(), requestDTO.getDate(), requestDTO.getStartTime(), requestDTO.getEndTime(), null);
         
@@ -107,6 +110,7 @@ public class BookingService {
         return saved;
     }
 
+    // Updates an existing booking after checking for new time conflicts
     public Booking updateBooking(String id, BookingRequestDTO updatedBooking) {
         checkForConflicts(updatedBooking.getResourceId(), updatedBooking.getDate(), updatedBooking.getStartTime(), updatedBooking.getEndTime(), id);
 
@@ -123,6 +127,7 @@ public class BookingService {
         return bookingRepository.save(existingBooking);
     }
 
+    // Approves a pending booking and notifies the user
     public Booking approveBooking(String id) {
         Booking booking = getBookingById(id);
         
@@ -146,6 +151,7 @@ public class BookingService {
         return saved;
     }
 
+    // Rejects a booking with a reason and notifies the user
     public Booking rejectBooking(String id, String reason) {
         Booking booking = getBookingById(id);
 
@@ -171,6 +177,7 @@ public class BookingService {
         return saved;
     }
 
+    // Cancels an active or pending booking and notifies the user
     public Booking cancelBooking(String id) {
         Booking booking = getBookingById(id);
 
@@ -195,6 +202,7 @@ public class BookingService {
         bookingRepository.deleteById(id);
     }
 
+    // Checks if the requested time slot overlaps with existing approved/pending bookings
     private void checkForConflicts(String resourceId, LocalDate date, LocalTime startTime, LocalTime endTime, String excludeBookingId) {
         List<Booking> dailyBookings = bookingRepository.findByResourceIdAndDate(resourceId, date);
         for (Booking existing : dailyBookings) {

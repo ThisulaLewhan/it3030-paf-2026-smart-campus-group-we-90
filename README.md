@@ -13,14 +13,14 @@ A comprehensive campus management system designed to handle resources, room book
 
 **Step 1: Clone repository**
 ```bash
-git clone <repository-url>
+git clone https://github.com/ThisulaLewhan/it3030-paf-2026-smart-campus-group-we-90.git
 ```
 
 **Step 2: Run backend**
 ```bash
 cd backend
-mvn clean install
-mvn spring-boot:run
+.\mvnw clean install
+.\mvnw spring-boot:run
 ```
 *The backend runs on: http://localhost:8080*
 
